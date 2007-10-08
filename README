@@ -1,0 +1,25 @@
+fixture_mocking
+==============
+
+The lauching stock of the rails testing community.
+
+  # spec/fixtures.rb
+  define_fixtures do
+    time 2007, 6, 1
+    
+    table :users do
+      fixture :name => 'bob', :admin => false
+      fixture :admin, :admin => true # inherits from default fixture
+    end
+    
+    table :posts do
+      # uses admin user fixture above
+      fixture :title => 'initial', :user => all_fixtures(:admin_user), :published_at => current_time + 5.days
+    end
+  end
+  
+  # spec/spec_helper.rb
+  require 'active_reload/fixture_mocking'
+  require File.join(File.dirname(__FILE__), 'fixtures')
+
+  ActiveReload::FixtureMocking.definitions[:default].setup_on Test::Unit
