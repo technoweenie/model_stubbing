@@ -44,6 +44,11 @@ ModelStubbing.define_models do
   
   model :users do
     stub :name => 'bob', :admin => false
+  end
+end
+
+ModelStubbing.define_models do
+  model :users do
     stub :admin, :admin => true # inherits from default fixture
   end
   

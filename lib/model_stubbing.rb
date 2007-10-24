@@ -4,8 +4,33 @@ require 'model_stubbing/stub'
 
 module ModelStubbing
   extend self
+  # Gets a hash of all current definitions.
   def self.definitions() @definitions ||= {} end
   
+  # Creates a new ModelStubbing::Definition.  If called from within a class,
+  # it is automatically setup (See Definition#setup_on).
+  #
+  # Creates or updates a definition going by the given name as a key.  If
+  # no name is given, it defaults to the current class or :default.  Multiple
+  # #define_models calls with the same name will modify the definition.
+  def define_models(name = nil, &block)
+    if is_a? Class
+      name ||= self
+      if defined?(Test::Unit::TestCase) && !ancestors.include?(TestUnitExtension) && ancestors.include?(Test::Unit::TestCase)
+        self.send :include, TestUnitExtension
+      elsif defined?(Spec::DSL::Example) && !ancestors.include?(RspecExtension) && ancestors.include?(Spec::DSL::Example)
+        self.send :include, RspecExtension
+      end
+    else
+      name ||= :default
+    end
+
+    defn = ModelStubbing.definitions[name] ||= ModelStubbing::Definition.new
+    defn.instance_eval(&block)
+    defn.setup_on self
+  end
+
+protected
   @@mock_framework = nil
   def self.stub_current_time_with(time)
     guess_mock_framework!
@@ -27,23 +52,8 @@ module ModelStubbing
         end
     end
   end
-  
-  def define_models(name = nil, &block)
-    defn = ModelStubbing::Definition.new(&block)
-    if is_a? Class
-      ModelStubbing.definitions[name || self] = defn
-      defn.setup_on self
-      puts ancestors.inspect
-      if defined?(Test::Unit::TestCase) && ancestors.include?(Test::Unit::TestCase)
-        self.send :include, TestUnitExtension
-      elsif defined?(Spec::DSL::Example) && ancestors.include?(Spec::DSL::Example)
-        self.send :include, RspecExtension
-      end
-    else
-      ModelStubbing.definitions[name || :default] = defn
-    end
-  end
-  
+
+  # Included into the current rspec example when #define_models is called.
   module RspecExtension
     def self.included(base)
       base.prepend_before do
@@ -52,6 +62,7 @@ module ModelStubbing
     end
   end
   
+  # Included into Test::Unit::TestCase when #define_models is calle.d
   module TestUnitExtension
     def self.included(base)
       base.class_eval do

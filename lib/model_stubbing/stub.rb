@@ -1,9 +1,15 @@
 module ModelStubbing
+  # Stubs hold custom attributes that are applied to models when
+  # instantiated.  By default, accessing the same stub twice
+  # will return the exact same instance.  However, custom attributes
+  # will create unique stub instances.
   class Stub
     attr_reader   :model
     attr_reader   :attributes
     attr_accessor :name
     
+    # Creates a new stub.  If it's not the default, it inherits the default 
+    # stub's attributes.
     def initialize(model, name, attributes)
       @model      = model
       @name       = name
@@ -19,12 +25,13 @@ module ModelStubbing
       @name == :default
     end
     
+    # Retrieves or creates a record based on the stub's set attributes and the given custom attributes.
     def record(attributes = {})
       attributes.empty? && @model.records.key?(self) ? retrieve : instantiate(attributes)
     end
     
     def inspect
-      "ModelStubbing::Stub(#{@name.inspect} => #{attributes.inspect})"
+      "(ModelStubbing::Stub(#{@name.inspect} => #{attributes.inspect}))"
     end
     
     private

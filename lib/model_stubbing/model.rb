@@ -1,4 +1,5 @@
 module ModelStubbing
+  # Models hold one or more stubs.
   class Model
     attr_reader   :definition
     attr_accessor :name
@@ -7,6 +8,9 @@ module ModelStubbing
     attr_reader   :stubs
     attr_reader   :records
 
+    # Creates a stub for this model.  A stub with no name is assumed to be the default
+    # stub.  A global key for the definition is also created based on the singular
+    # form of the stub name.  
     def stub(name = nil, options = {})
       if name.is_a?(Hash)
         options = name
@@ -43,18 +47,22 @@ module ModelStubbing
       @model_class
     end
     
+    # References the default stub for this model.
     def default
       @stubs[:default]
     end
     
+    # Accesses the current mocked time for this definition.
     def current_time
       @definition.current_time
     end
     
+    # Shortcut to all the stubs for the definition.
     def all_stubs(key = nil)
       key ? @definition.stubs[key] : @definition.stubs
     end
 
+    # Instantiates a stub into a new record.
     def retrieve_record(key, attributes = {})
       @stubs[key].record(attributes)
     end
@@ -64,7 +72,7 @@ module ModelStubbing
     end
 
     def inspect
-      "ModelStubbing::Model(#{@name.inspect} => [#{@stubs.keys.collect { |k| k.to_s }.sort.join(", ")}])"
+      "(ModelStubbing::Model(#{@name.inspect} => [#{@stubs.keys.collect { |k| k.to_s }.sort.join(", ")}]))"
     end
   end
 end
