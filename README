@@ -1,25 +1,58 @@
-fixture_mocking
+model_stubbing
 ==============
 
-The lauching stock of the rails testing community.
+Creates in-memory versions of models for testing.  This attempts to solve a
+few problems with ActiveRecord Fixtures:
 
-  # spec/fixtures.rb
-  define_fixtures do
-    time 2007, 6, 1
+Speed - There's no hit to the database and no cleanup between tests.
+Flexibility - You can define a global set of stubs, or define custom ones
+  for specific tests/specs
+
+A lot of these ideas were taken from various approaches to fixtures and mocking
+that I've seen:
+
+Rspec and #mock_model
+unit_record
+other_fixture_thing?
+examplar_thing?
+
+  # test/unit example
+  require 'fixture_mocking'
+  Test::Unit::TestCase.extend ModelStubbing
+
+  class FooTest < Test::Unit::TestCase
+    define_models do
+      time 2007, 6, 1
     
-    table :users do
-      fixture :name => 'bob', :admin => false
-      fixture :admin, :admin => true # inherits from default fixture
+      model :users do
+        stub :name => 'bob', :admin => false
+        stub :admin, :admin => true # inherits from default fixture
+      end
+    
+      model :posts do
+        # uses admin user fixture above
+        stub :title => 'initial', :user => all_stubs(:admin_user), 
+          :published_at => current_time + 5.days
+      end
     end
     
-    table :posts do
-      # uses admin user fixture above
-      fixture :title => 'initial', :user => all_fixtures(:admin_user), :published_at => current_time + 5.days
+    def test_foo
+      @user   = users(:default) # default user stub
+      @admin  = users(:admin)
+      @custom = users(:default, :age => 25) # custom attributes, 
+                                            #but not equal to @user any more
+                                            
+      @post   = posts(:default)
+      @post.user # equal to @admin above
+      
+      current_time # stubbed to be 6/1/2007 using mocha or rspec
     end
   end
-  
-  # spec/spec_helper.rb
-  require 'active_reload/fixture_mocking'
-  require File.join(File.dirname(__FILE__), 'fixtures')
 
-  ActiveReload::FixtureMocking.definitions[:default].setup_on Test::Unit
+  # rspec example
+  require 'fixture_mocking'
+  Spec::DSL::Example.send :extend, ModelStubbing
+
+  describe Foo do
+    ...
+  end

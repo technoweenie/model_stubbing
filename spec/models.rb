@@ -1,7 +1,7 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
 require 'rubygems'
 require 'ruby-debug'
-require 'active_reload/fixture_mocking'
+require 'model_stubbing'
 begin
   require 'active_support'
 rescue LoadError
@@ -39,20 +39,20 @@ end
 User = Class.new BlankModel
 Post = Class.new BlankModel
 
-define_fixtures do
+ModelStubbing.define_models do
   time 2007, 6, 1
   
-  table :users do
-    fixture :name => 'bob', :admin => false
-    fixture :admin, :admin => true # inherits from default fixture
+  model :users do
+    stub :name => 'bob', :admin => false
+    stub :admin, :admin => true # inherits from default fixture
   end
   
-  table :posts do
+  model :posts do
     # uses admin user fixture above
-    fixture :title => 'initial', :user => all_fixtures(:admin_user), :published_at => current_time + 5.days
+    stub :title => 'initial', :user => all_stubs(:admin_user), :published_at => current_time + 5.days
   end
 end
 
-ActiveReload::FixtureMocking.definitions[:default].setup_on FakeTester
+ModelStubbing.definitions[:default].setup_on FakeTester
 
 Debugger.start

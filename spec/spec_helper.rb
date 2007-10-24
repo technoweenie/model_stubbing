@@ -10,3 +10,5 @@ rescue LoadError
   require 'rubygems'
   require 'spec'
 end
+
+require File.join(File.dirname(__FILE__), 'models')
