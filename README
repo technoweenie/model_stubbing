@@ -19,7 +19,8 @@ Exemplar (http://www.bofh.org.uk/articles/2007/08/05/doing-the-fixture-thing)
 I actually saw Exemplar after I wrote the initial version, but they do seem similar.
 
 I honestly don't know if this is a better way or anything, I'm just experimenting with
-a different approach.
+a different approach.  Oh, and apparently this is an implementation of the ObjectMother 
+(http://www.martinfowler.com/bliki/ObjectMother.html) pattern?
 
   # test/unit example
   require 'fixture_mocking'
