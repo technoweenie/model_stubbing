@@ -11,10 +11,15 @@ Flexibility - You can define a global set of stubs, or define custom ones
 A lot of these ideas were taken from various approaches to fixtures and mocking
 that I've seen:
 
+fixture scenarios (http://errtheblog.com/post/7708)
+unit_record (http://www.dcmanges.com/blog/rails-unit-record-test-without-the-database)
 Rspec and #mock_model
-unit_record
-other_fixture_thing?
-examplar_thing?
+
+Exemplar (http://www.bofh.org.uk/articles/2007/08/05/doing-the-fixture-thing)
+I actually saw Exemplar after I wrote the initial version, but they do seem similar.
+
+I honestly don't know if this is a better way or anything, I'm just experimenting with
+a different approach.
 
   # test/unit example
   require 'fixture_mocking'
