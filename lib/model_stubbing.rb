@@ -14,17 +14,7 @@ module ModelStubbing
   # no name is given, it defaults to the current class or :default.  Multiple
   # #define_models calls with the same name will modify the definition.
   def define_models(name = nil, &block)
-    if is_a? Class
-      name ||= self
-      if defined?(Test::Unit::TestCase) && !ancestors.include?(TestUnitExtension) && ancestors.include?(Test::Unit::TestCase)
-        self.send :include, TestUnitExtension
-      elsif defined?(Spec::DSL::Example) && !ancestors.include?(RspecExtension) && ancestors.include?(Spec::DSL::Example)
-        self.send :include, RspecExtension
-      end
-    else
-      name ||= :default
-    end
-
+    name ||= is_a?(Class) ? self : :default
     defn = ModelStubbing.definitions[name] ||= ModelStubbing::Definition.new
     defn.instance_eval(&block)
     defn.setup_on self
@@ -56,6 +46,9 @@ protected
   # Included into the current rspec example when #define_models is called.
   module RspecExtension
     def self.included(base)
+      base.prepend_before :all do
+        self.class.definition.models.values.each &:insert if self.class.definition.database?
+      end
       base.prepend_before do
         ModelStubbing.stub_current_time_with(current_time) if current_time
       end

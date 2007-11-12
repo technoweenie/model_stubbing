@@ -74,5 +74,20 @@ module ModelStubbing
     def inspect
       "(ModelStubbing::Model(#{@name.inspect} => [#{@stubs.keys.collect { |k| k.to_s }.sort.join(", ")}]))"
     end
+    
+    def insert
+      model_class.transaction do
+        purge
+        @stubs.values.each &:insert
+      end
+    end
+    
+    def purge
+      model_class.connection.execute "TRUNCATE TABLE #{connection.quote_column_name model_class.table_name}"
+    end
+    
+    def connection
+      @connection ||= model_class.connection
+    end
   end
 end

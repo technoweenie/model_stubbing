@@ -34,43 +34,83 @@ module ModelStubbing
       "(ModelStubbing::Stub(#{@name.inspect} => #{attributes.inspect}))"
     end
     
-    private
-      def instantiate(attributes)
-        stubs = {}
-        default_record = attributes.empty?
-        
-        @attributes.each do |key, value|
-          stubs[key] = value if value.is_a?(Stub)
-        end
-        
-        attributes.each do |key, value|
-          case value
-            when Stub
-              stubs[key] = attributes.delete(key)
-            when Hash
-              stubs[key] = stubs[key].record(value)
-          end
-        end
+    def insert(attributes = {})
+      object = record(attributes)
+      connection.insert_fixture(object.stubbed_attributes, model.model_class.table_name)
+    end
+    
+    def connection
+      @connection ||= @model.connection
+    end
+  
+  private
+    def instantiate(attributes)
+      default_record    = attributes.empty?
+      stubs, attributes = stubbed_attributes(attributes)
 
-        attributes = @attributes.merge(attributes)
-
-        record = @model.model_class.new(attributes)
-        meta   = class << record ; self ; end
-        
-        meta.send :attr_accessor, :id
-        record.id = @model.model_class.mock_id
-
-        stubs.each do |key, value|
-          meta.send :attr_accessor, key
-          record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
-        end
-        
-        @model.records[self] = record if default_record
-        record
+      record = @model.model_class.new(attributes)
+      meta   = class << record
+        def new_record?() false end
+        self
       end
       
-      def retrieve
-        @model.records[self]
+      meta.send :attr_accessor, :stubbed_attributes
+      record.id = @model.model_class.mock_id
+      record.stubbed_attributes = attributes.merge(:id => record.id)
+
+      stubs.each do |key, value|
+        meta.send :attr_accessor, key
+        record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
       end
+      
+      @model.records[self] = record if default_record
+      record
+    end
+    
+    def stubbed_attributes(attributes)
+      stubs   = {}
+      stubbed = FixtureHash.new(self)
+      
+      @attributes.each do |key, value|
+        stubbed[key] = value
+        stubs[key]   = value if value.is_a?(Stub)
+      end
+      
+      attributes.each do |key, value|
+        case value
+          when Stub
+            stubs[key] = attributes.delete(key)
+          when Hash
+            stubs[key] = stubs[key].record(value)
+        end
+      end
+
+      [stubs, stubbed.update(attributes)]
+    end
+    
+    def retrieve
+      @model.records[self]
+    end
+  end
+  
+  class FixtureHash < Hash
+    def initialize(stub)
+      super()
+      @stub = stub
+    end
+
+    def key_list
+      keys.collect { |column_name| @stub.connection.quote_column_name(column_name) } * ", "
+    end
+
+    def value_list
+      klass = @stub.model.model_class
+
+      list = inject([]) do |fixtures, (key, value)|
+        col = klass.columns_hash[key] if klass.ancestors.include?(ActiveRecord::Base)
+        fixtures << @stub.connection.quote(value, col).gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
+      end
+      list * ', '
+    end
   end
 end

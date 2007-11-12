@@ -15,7 +15,9 @@ module ModelStubbing
     # Creates a new ModelStubbing::Model to hold one or more stubs.  Multiple calls will append
     # any added stubs to the same model instance.
     def model(model_name, options = {}, &block)
-      (@models[model_name] ||= Model.new(self, model_name, options)).instance_eval(&block)
+      @models[model_name] ||= Model.new(self, model_name, options)
+      @models[model_name].instance_eval(&block)
+      @models[model_name]
     end
     
     def initialize(&block)
@@ -37,6 +39,13 @@ module ModelStubbing
     def setup_on(klass)
       unless klass.respond_to?(:definition) && klass.definition
         klass.class_eval do
+          if klass.is_a?(Class)
+            if defined?(Spec::DSL::ExampleGroup) && !klass.ancestors.include?(RspecExtension) && klass.ancestors.include?(Spec::DSL::ExampleGroup)
+              include RspecExtension
+            elsif defined?(Test::Unit::TestCase) && !klass.ancestors.include?(TestUnitExtension) && klass.ancestors.include?(Test::Unit::TestCase)
+              include TestUnitExtension
+            end
+          end
           def stubs(key, attributes = {})
             self.class.definition.retrieve_record(key, attributes)
           end
@@ -57,6 +66,10 @@ module ModelStubbing
     # each time.
     def retrieve_record(key, attributes = {})
       @stubs[key].record(attributes)
+    end
+    
+    def database?
+      Object.const_defined?(ActiveRecord)
     end
     
     def inspect

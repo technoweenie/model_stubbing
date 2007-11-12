@@ -12,11 +12,8 @@ class FakeTester
 end
 
 class BlankModel
+  attr_accessor :id
   attr_reader :attributes
-  
-  def id
-    nil
-  end
   
   def initialize(attributes = {})
     @attributes = attributes
