@@ -69,7 +69,7 @@ module ModelStubbing
     end
     
     def database?
-      Object.const_defined?(ActiveRecord)
+      defined?(ActiveRecord)
     end
     
     def inspect
