@@ -1,17 +1,17 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-Spec::DSL::Example.send :extend, ModelStubbing
+Spec::DSL::ExampleGroup.send :extend, ModelStubbing
 
 describe "Sample Stub Usage" do
   define_models do
     time 2007, 6, 1
   
-    model :users do
+    model User do
       stub :name => 'fred', :admin => false
       stub :admin, :admin => true
     end
   
-    model :posts do
+    model Post do
       stub :title => 'first', :user => all_stubs(:admin_user), :published_at => current_time + 5.days
     end
   end

@@ -14,10 +14,11 @@ module ModelStubbing
     
     # Creates a new ModelStubbing::Model to hold one or more stubs.  Multiple calls will append
     # any added stubs to the same model instance.
-    def model(model_name, options = {}, &block)
-      @models[model_name] ||= Model.new(self, model_name, options)
-      @models[model_name].instance_eval(&block)
-      @models[model_name]
+    def model(klass, options = {}, &block)
+      m = Model.new(self, klass, options)
+      @models[m.name] ||= m
+      @models[m.name].instance_eval(&block)
+      @models[m.name]
     end
     
     def initialize(&block)

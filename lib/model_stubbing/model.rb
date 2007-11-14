@@ -7,6 +7,7 @@ module ModelStubbing
     attr_accessor :singular
     attr_reader   :stubs
     attr_reader   :records
+    attr_reader   :model_class
 
     # Creates a stub for this model.  A stub with no name is assumed to be the default
     # stub.  A global key for the definition is also created based on the singular
@@ -21,30 +22,23 @@ module ModelStubbing
       all_stubs[global_key] = @stubs[name] = Stub.new(self, name, options)
     end
 
-    def initialize(definition, name, options = {}, &block)
+    def initialize(definition, klass, options = {}, &block)
       @definition  = definition
-      @name        = name
+      @model_class = klass
+      @name        = options[:name]     || klass.table_name.to_sym
       @plural      = options[:plural]   || name
       @singular    = options[:singular] || name.to_s.singularize
-      @model_class = options[:class]
       @stubs       = {}
       @records     = {}
-      instance_eval &block if block
-    end
-    
-    def model_class
-      if @model_class.nil?
-        @model_class = name.to_s.classify.constantize
-        unless @model_class.respond_to?(:mock_id)
-          class << @model_class
-            define_method :mock_id do
-              @mock_id ||= 999
-              @mock_id  += 1
-            end
+      unless @model_class.respond_to?(:mock_id)
+        class << @model_class
+          define_method :mock_id do
+            @mock_id ||= 999
+            @mock_id  += 1
           end
         end
       end
-      @model_class
+      instance_eval &block if block
     end
     
     # References the default stub for this model.

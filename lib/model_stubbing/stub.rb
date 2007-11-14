@@ -46,9 +46,9 @@ module ModelStubbing
   private
     def instantiate(attributes)
       default_record    = attributes.empty?
-      stubs, attributes = stubbed_attributes(attributes)
+      stubs, attributes = stubbed_attributes(@attributes.merge(attributes))
 
-      record = @model.model_class.new(attributes)
+      record = @model.model_class.new
       meta   = class << record
         def new_record?() false end
         self
@@ -58,11 +58,16 @@ module ModelStubbing
       record.id = @model.model_class.mock_id
       record.stubbed_attributes = attributes.merge(:id => record.id)
 
+      attributes.each do |key, value|
+        
+        record[key] = value
+      end
+
       stubs.each do |key, value|
         meta.send :attr_accessor, key
         record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
       end
-      
+   
       @model.records[self] = record if default_record
       record
     end
@@ -71,21 +76,12 @@ module ModelStubbing
       stubs   = {}
       stubbed = FixtureHash.new(self)
       
-      @attributes.each do |key, value|
-        stubbed[key] = value
-        stubs[key]   = value if value.is_a?(Stub)
-      end
-      
       attributes.each do |key, value|
-        case value
-          when Stub
-            stubs[key] = attributes.delete(key)
-          when Hash
-            stubs[key] = stubs[key].record(value)
-        end
+        stubbed[key] = value
+        stubs[key]   = value if value.is_a? Stub
       end
 
-      [stubs, stubbed.update(attributes)]
+      [stubs, stubbed]
     end
     
     def retrieve
@@ -100,17 +96,41 @@ module ModelStubbing
     end
 
     def key_list
-      keys.collect { |column_name| @stub.connection.quote_column_name(column_name) } * ", "
+      keys.collect { |key| @stub.connection.quote_column_name(column_name_for(key)) } * ", "
     end
 
     def value_list
-      klass = @stub.model.model_class
-
       list = inject([]) do |fixtures, (key, value)|
-        col = klass.columns_hash[key] if klass.ancestors.include?(ActiveRecord::Base)
-        fixtures << @stub.connection.quote(value, col).gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
+        column_name = column_name_for key
+        column      = column_for column_name
+        value       = value.record.id if value.is_a?(Stub)
+        fixtures << @stub.connection.quote(value, column).gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
+      end.join(", ")
+    end
+  
+  private
+    def model_class
+      @stub.model.model_class
+    end
+
+    def column_name_for(key)
+      (@keys ||= {})[key] ||= begin
+        value = self[key]
+        if value.is_a? Stub
+          if defined?(ActiveRecord)
+            reflection = model_class.reflect_on_association(key)
+            reflection.primary_key_name
+          else
+            "#{key}_id"
+          end
+        else
+          key
+        end
       end
-      list * ', '
+    end
+  
+    def column_for(name)
+      model_class.columns_hash[name] if defined?(ActiveRecord) && model_class.ancestors.include?(ActiveRecord::Base)
     end
   end
 end

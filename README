@@ -30,12 +30,12 @@ a different approach.  Oh, and apparently this is an implementation of the Objec
     define_models do
       time 2007, 6, 1
     
-      model :users do
+      model User do
         stub :name => 'bob', :admin => false
         stub :admin, :admin => true # inherits from default fixture
       end
     
-      model :posts do
+      model Post do
         # uses admin user fixture above
         stub :title => 'initial', :user => all_stubs(:admin_user), 
           :published_at => current_time + 5.days
@@ -57,7 +57,7 @@ a different approach.  Oh, and apparently this is an implementation of the Objec
 
   # rspec example
   require 'fixture_mocking'
-  Spec::DSL::Example.send :extend, ModelStubbing
+  Spec::DSL::ExampleGroup.send :extend, ModelStubbing
 
   describe Foo do
     ...

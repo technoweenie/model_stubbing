@@ -8,12 +8,12 @@ class SampleTest < Test::Unit::TestCase
   define_models do
     time 2007, 6, 1
   
-    model :users do
+    model User do
       stub :name => 'fred', :admin => false
       stub :admin, :admin => true
     end
   
-    model :posts do
+    model Post do
       stub :title => 'first', :user => all_stubs(:admin_user), :published_at => current_time + 5.days
     end
   end
