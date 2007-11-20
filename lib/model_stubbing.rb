@@ -16,7 +16,7 @@ module ModelStubbing
   def define_models(name = nil, &block)
     name ||= is_a?(Class) ? self : :default
     defn = ModelStubbing.definitions[name] ||= ModelStubbing::Definition.new
-    defn.instance_eval(&block)
+    defn.instance_eval(&block) if block
     defn.setup_on self
   end
 
@@ -46,8 +46,8 @@ protected
   # Included into the current rspec example when #define_models is called.
   module RspecExtension
     def self.included(base)
-      base.prepend_before :all do
-        self.class.definition.models.values.each &:insert if self.class.definition.database?
+      base.prepend_before(:each) do
+        self.class.definition.models.values.each(&:insert) if self.class.definition.database?
       end
       base.prepend_before do
         ModelStubbing.stub_current_time_with(current_time) if current_time

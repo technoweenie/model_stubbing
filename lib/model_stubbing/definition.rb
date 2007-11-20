@@ -17,7 +17,7 @@ module ModelStubbing
     def model(klass, options = {}, &block)
       m = Model.new(self, klass, options)
       @models[m.name] ||= m
-      @models[m.name].instance_eval(&block)
+      @models[m.name].instance_eval(&block) if block
       @models[m.name]
     end
     
