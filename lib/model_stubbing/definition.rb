@@ -69,8 +69,8 @@ module ModelStubbing
               include TestUnitExtension
             end
           end
-          def stubs(key, attributes = {})
-            self.class.definition.retrieve_record(key, attributes)
+          def stubs(key)
+            self.class.definition.stubs[key]
           end
           
           def current_time

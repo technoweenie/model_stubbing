@@ -38,11 +38,11 @@ describe Definition, "setup" do
   end
   
   it "retrieves default stubs" do
-    @tester.stubs(:user).should       == @definition.models[:users].default.record
+    @tester.stubs(:user).should == @definition.models[:users].default
   end
   
   it "retrieves stubs" do
-    @tester.stubs(:admin_user).should == @definition.models[:users].stubs[:admin].record
+    @tester.stubs(:admin_user).should == @definition.models[:users].stubs[:admin]
   end
   
   it "retrieves default stubs with stub model method" do
