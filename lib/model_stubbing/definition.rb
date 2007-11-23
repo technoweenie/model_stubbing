@@ -3,9 +3,9 @@ module ModelStubbing
   # can set the current time for your tests.  You typically create one per test case or
   # rspec example.
   class Definition
-    attr_reader :current_time
-    attr_reader :models
-    attr_reader :stubs
+    attr_accessor :current_time
+    attr_reader   :models
+    attr_reader   :stubs
 
     # Sets the time that Time.now is mocked to (in UTC)
     def time(*args)
@@ -29,6 +29,7 @@ module ModelStubbing
     
     def dup
       copy = self.class.new
+      copy.current_time = @current_time
       models.each do |name, model|
         copy.models[name] = model.dup(copy)
       end
@@ -40,7 +41,7 @@ module ModelStubbing
     
     def ==(defn)
       (defn.object_id == object_id) ||
-        (defn.is_a?(Definition))# && defn.models == @models && defn.stubs == @stubs)
+        (defn.is_a?(Definition) && defn.models == @models && defn.stubs == @stubs)
     end
     
     # Sets up the given class for this definition.  Adds a few helper methods:

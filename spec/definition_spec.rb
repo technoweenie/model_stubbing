@@ -60,6 +60,10 @@ describe Definition, "duping itself" do
     @copy = @defn.dup
   end
   
+  it "dups @current_time" do
+    @defn.current_time.should == @copy.current_time
+  end
+  
   it "dups each model" do
     @defn.models.each do |name, model|
       duped_model = @copy.models[name]
