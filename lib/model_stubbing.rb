@@ -6,15 +6,17 @@ module ModelStubbing
   extend self
   # Gets a hash of all current definitions.
   def self.definitions() @definitions ||= {} end
-  
+
   # Creates a new ModelStubbing::Definition.  If called from within a class,
   # it is automatically setup (See Definition#setup_on).
   #
   # Creates or updates a definition going by the given name as a key.  If
   # no name is given, it defaults to the current class or :default.  Multiple
   # #define_models calls with the same name will modify the definition.
-  def define_models(name = :default, &block)
-    defn = ModelStubbing.definitions[name] ||= ModelStubbing::Definition.new
+  def define_models(name = nil, &block)
+    name ||= is_a?(Class) ? self : :default
+    base   = name == :default ? nil : ModelStubbing.definitions[:default]
+    defn   = ModelStubbing.definitions[name] ||= base ? base.dup : ModelStubbing::Definition.new
     defn.instance_eval(&block) if block
     defn.setup_on self
   end

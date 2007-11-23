@@ -6,6 +6,7 @@ module ModelStubbing
   class Stub
     attr_reader   :model
     attr_reader   :attributes
+    attr_reader   :global_key
     attr_accessor :name
     
     # Creates a new stub.  If it's not the default, it inherits the default 
@@ -19,6 +20,18 @@ module ModelStubbing
         else
           model.default.attributes.merge(attributes)
         end
+
+      @global_key = (name == :default ? @model.singular : "#{name}_#{@model.singular}").to_sym
+      @model.all_stubs[@global_key] = @model.stubs[name] = self
+    end
+    
+    def dup(model = nil)
+      Stub.new(model || @model, @name, @attributes)
+    end
+    
+    def ==(stub)
+      (stub.object_id == object_id) ||
+        (stub.is_a?(Stub) && stub.model.name == @model.name && stub.global_key == @global_key && stub.name == @name && stub.attributes == @attributes)
     end
     
     def default?

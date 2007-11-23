@@ -53,3 +53,39 @@ describe Definition, "setup" do
     @tester.users(:admin).should == @definition.models[:users].stubs[:admin].record
   end
 end
+
+describe Definition, "duping itself" do
+  before :all do
+    @defn = ModelStubbing.definitions[:default]
+    @copy = @defn.dup
+  end
+  
+  it "dups each model" do
+    @defn.models.each do |name, model|
+      duped_model = @copy.models[name]
+      model.should == duped_model
+      model.should_not be_equal(duped_model)
+      model.stubs.each do |key, stub|
+        duped_stub = @copy.models[name].stubs[key]
+        stub.should == duped_stub
+        stub.should_not be_equal(duped_stub)
+      end
+    end
+  end
+
+  it "dups each stub" do
+    @defn.stubs.each do |name, stub|
+      duped_stub = @copy.stubs[name]
+      stub.should == duped_stub
+      stub.should_not be_equal(duped_stub)
+    end
+  end
+
+  it "is not the same instance" do
+    @defn.object_id.should_not == @copy.object_id
+  end
+  
+  it "is still be equal" do
+    @defn.should == @copy
+  end
+end

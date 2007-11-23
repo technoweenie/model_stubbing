@@ -27,6 +27,22 @@ module ModelStubbing
       instance_eval &block if block
     end
     
+    def dup
+      copy = self.class.new
+      models.each do |name, model|
+        copy.models[name] = model.dup(copy)
+      end
+      stubs.each do |name, stub|
+        copy.stubs[name] = copy.models[stub.model.name].stubs[stub.name]
+      end
+      copy
+    end
+    
+    def ==(defn)
+      (defn.object_id == object_id) ||
+        (defn.is_a?(Definition))# && defn.models == @models && defn.stubs == @stubs)
+    end
+    
     # Sets up the given class for this definition.  Adds a few helper methods:
     #
     # * #stubs: Lets you access all stubs with a global key, which combines the model

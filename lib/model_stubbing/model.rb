@@ -5,8 +5,8 @@ module ModelStubbing
     attr_accessor :name
     attr_accessor :plural
     attr_accessor :singular
+    attr_accessor :records
     attr_reader   :stubs
-    attr_reader   :records
     attr_reader   :model_class
 
     # Creates a stub for this model.  A stub with no name is assumed to be the default
@@ -18,8 +18,7 @@ module ModelStubbing
         name    = :default
       end
 
-      global_key = (name == :default ? @singular : "#{name}_#{@singular}").to_sym
-      all_stubs[global_key] = @stubs[name] = Stub.new(self, name, options)
+      Stub.new(self, name, options)
     end
 
     def initialize(definition, klass, options = {}, &block)
@@ -39,6 +38,20 @@ module ModelStubbing
         end
       end
       instance_eval &block if block
+    end
+    
+    def dup(definition = nil)
+      copy = self.class.new(definition || @definition, @model_class, :name => @name, :plural => @plural, :singular => @singular)
+      stubs.each do |key, value|
+        copy.stubs[key] = value.dup(copy)
+      end
+      copy.records = records
+      copy
+    end
+    
+    def ==(model)
+      (model.object_id == object_id) ||
+        (model.is_a?(Model) && model.name == @name && model.model_class == @model_class)
     end
     
     # References the default stub for this model.
