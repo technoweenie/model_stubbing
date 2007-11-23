@@ -23,8 +23,8 @@ a different approach.  Oh, and apparently this is an implementation of the Objec
 (http://www.martinfowler.com/bliki/ObjectMother.html) pattern?
 
   # test/unit example
-  require 'fixture_mocking'
-  Test::Unit::TestCase.extend ModelStubbing
+  # test/unit support not fully implemented yet
+  require 'model_stubbing/test_case'
 
   class FooTest < Test::Unit::TestCase
     define_models do
@@ -56,9 +56,18 @@ a different approach.  Oh, and apparently this is an implementation of the Objec
   end
 
   # rspec example
-  require 'fixture_mocking'
-  Spec::DSL::ExampleGroup.send :extend, ModelStubbing
+  require 'model_stubbing/spec'
 
   describe Foo do
     ...
   end
+
+TODO
+====
+
+* Finish implementing test/unit support.  Main issue is it doesn't
+  insert the model stubs into the database since there's no equivalent
+  to before(:all) in rspec
+
+* Support Sequel, DataMapper, etc?  I use AR, but I'm willing to abstract
+  some of that out in case someone wants to support another ORM.

@@ -14,10 +14,21 @@ module ModelStubbing
   # Creates or updates a definition going by the given name as a key.  If
   # no name is given, it defaults to the current class or :default.  Multiple
   # #define_models calls with the same name will modify the definition.
-  def define_models(name = nil, &block)
+  # 
+  # Options:
+  # * :copy - set to false if you don't want this definition to be a dup of
+  #   the :default definition
+  # * :insert - set to false if you don't want to insert this definition
+  #   into the database.
+  def define_models(name = nil, options = {}, &block)
+    if name.is_a? Hash
+      options = name
+      name    = nil
+    end
     name ||= is_a?(Class) ? self : :default
     base   = name == :default ? nil : ModelStubbing.definitions[:default]
-    defn   = ModelStubbing.definitions[name] ||= base ? base.dup : ModelStubbing::Definition.new
+    defn   = ModelStubbing.definitions[name] ||= (base && options[:copy] != false) ? base.dup : ModelStubbing::Definition.new
+    defn.insert = false if options[:insert] == false
     defn.instance_eval(&block) if block
     defn.setup_on self
   end
@@ -48,8 +59,12 @@ protected
   # Included into the current rspec example when #define_models is called.
   module RspecExtension
     def self.included(base)
-      base.prepend_before(:each) do
-        self.class.definition.models.values.each(&:insert) if self.class.definition.database?
+      base.prepend_before(:all) do
+        if self.class.definition.insert?
+          ActiveRecord::Base.transaction do
+            self.class.definition.models.values.each(&:insert)
+          end
+        end
       end
       base.prepend_before do
         ModelStubbing.stub_current_time_with(current_time) if current_time
