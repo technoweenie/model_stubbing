@@ -52,6 +52,32 @@ module ModelStubbing
       connection.insert_fixture(object.stubbed_attributes, model.model_class.table_name)
     end
     
+    def with(attributes)
+      @attributes.merge(attributes)
+    end
+    
+    def only(*keys)
+      keys = Set.new Array(keys)
+      @attributes.inject({}) do |attr, (key, value)|
+        if keys.include?(key)
+          attr.update key => value
+        else
+          attr
+        end
+      end
+    end
+    
+    def except(*keys)
+      keys = Set.new Array(keys)
+      @attributes.inject({}) do |attr, (key, value)|
+        if keys.include?(key)
+          attr
+        else
+          attr.update key => value
+        end
+      end
+    end
+    
     def connection
       @connection ||= @model.connection
     end

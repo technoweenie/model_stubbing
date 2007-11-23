@@ -18,6 +18,18 @@ describe Stub do
     @user.attributes.should == {:name => 'bob', :admin => false}
   end
   
+  it "#with returns merged attributes" do
+    @user.with(:name => 'fred').should == {:name => 'fred', :admin => false}
+  end
+  
+  it "#only returns only given keys" do
+    @user.only(:name).should == {:name => 'bob'}
+  end
+  
+  it "#except returns other keys" do
+    @user.except(:admin).should == {:name => 'bob'}
+  end
+  
   it "merges named stub attributes with default attributes" do
     @users.stubs[:admin].attributes.should == {:name => 'bob', :admin => true}
   end
