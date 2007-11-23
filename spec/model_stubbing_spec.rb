@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-Spec::DSL::ExampleGroup.send :extend, ModelStubbing
+# support rspec 1.0.8 and edge
+(Spec::DSL.const_defined?(:ExampleGroup) ? Spec::DSL::ExampleGroup : Spec::DSL::Example).extend ModelStubbing
 
 describe "Sample Stub Usage" do
   define_models do
