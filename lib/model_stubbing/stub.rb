@@ -14,7 +14,7 @@ module ModelStubbing
       @model      = model
       @name       = name
       @attributes = 
-        if default?
+        if default? || model.default.nil?
           attributes
         else
           model.default.attributes.merge(attributes)
@@ -46,26 +46,27 @@ module ModelStubbing
   private
     def instantiate(attributes)
       default_record    = attributes.empty?
-      stubs, attributes = stubbed_attributes(@attributes.merge(attributes))
+      attributes = stubbed_attributes(@attributes.merge(attributes))
 
       record = @model.model_class.new
       meta   = class << record
+        attr_accessor :stubbed_attributes
         def new_record?() false end
         self
       end
       
-      meta.send :attr_accessor, :stubbed_attributes
       record.id = @model.model_class.mock_id
       record.stubbed_attributes = attributes.merge(:id => record.id)
-
       attributes.each do |key, value|
-        
-        record[key] = value
-      end
-
-      stubs.each do |key, value|
-        meta.send :attr_accessor, key
-        record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
+        if value.is_a? Stub
+          # set foreign key
+          record[attributes.column_name_for(key)] = value.record.id
+          # set association
+          meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
+          record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
+        else
+          record[key] = value
+        end
       end
    
       @model.records[self] = record if default_record
@@ -73,15 +74,9 @@ module ModelStubbing
     end
     
     def stubbed_attributes(attributes)
-      stubs   = {}
-      stubbed = FixtureHash.new(self)
-      
-      attributes.each do |key, value|
-        stubbed[key] = value
-        stubs[key]   = value if value.is_a? Stub
+      attributes.inject FixtureHash.new(self) do |stubbed, (key, value)|
+        stubbed.update key => value
       end
-
-      [stubs, stubbed]
     end
     
     def retrieve
@@ -107,11 +102,6 @@ module ModelStubbing
         fixtures << @stub.connection.quote(value, column).gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
       end.join(", ")
     end
-  
-  private
-    def model_class
-      @stub.model.model_class
-    end
 
     def column_name_for(key)
       (@keys ||= {})[key] ||= begin
@@ -131,6 +121,11 @@ module ModelStubbing
   
     def column_for(name)
       model_class.columns_hash[name] if defined?(ActiveRecord) && model_class.ancestors.include?(ActiveRecord::Base)
+    end
+  
+  private
+    def model_class
+      @stub.model.model_class
     end
   end
 end
