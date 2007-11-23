@@ -6,6 +6,7 @@ module ModelStubbing
   extend self
   # Gets a hash of all current definitions.
   def self.definitions() @definitions ||= {} end
+  def self.records()     @records     ||= {} end
 
   # Creates a new ModelStubbing::Definition.  If called from within a class,
   # it is automatically setup (See Definition#setup_on).

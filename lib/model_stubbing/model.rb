@@ -5,7 +5,6 @@ module ModelStubbing
     attr_accessor :name
     attr_accessor :plural
     attr_accessor :singular
-    attr_accessor :records
     attr_reader   :stubs
     attr_reader   :model_class
 
@@ -28,7 +27,6 @@ module ModelStubbing
       @plural      = options[:plural]   || name
       @singular    = options[:singular] || name.to_s.singularize
       @stubs       = {}
-      @records     = {}
       unless @model_class.respond_to?(:mock_id)
         class << @model_class
           define_method :mock_id do
@@ -45,7 +43,6 @@ module ModelStubbing
       stubs.each do |key, value|
         copy.stubs[key] = value.dup(copy)
       end
-      copy.records = records
       copy
     end
     

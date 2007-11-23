@@ -105,8 +105,7 @@ describe Stub, "instantiating a record" do
   end
   
   before do
-    ModelStubbing.definitions[:default].models[:posts].records.clear
-    @model.records.clear
+    ModelStubbing.records.clear
   end
   
   it "sets id" do
@@ -144,8 +143,7 @@ describe Stub, "instantiating a record with an association" do
   end
   
   before do
-    @posts.records.clear
-    @users.records.clear
+    ModelStubbing.records.clear
   end
   
   it "stubs associated records" do

@@ -40,7 +40,7 @@ module ModelStubbing
     
     # Retrieves or creates a record based on the stub's set attributes and the given custom attributes.
     def record(attributes = {})
-      attributes.empty? && @model.records.key?(self) ? retrieve : instantiate(attributes)
+      attributes.empty? && ModelStubbing.records.key?(record_key(attributes)) ? retrieve(attributes) : instantiate(attributes)
     end
     
     def inspect
@@ -58,8 +58,8 @@ module ModelStubbing
   
   private
     def instantiate(attributes)
-      default_record    = attributes.empty?
-      attributes = stubbed_attributes(@attributes.merge(attributes))
+      default_record     = attributes.empty?
+      stubbed_attributes = stubbed_attributes(@attributes.merge(attributes))
 
       record = @model.model_class.new
       meta   = class << record
@@ -69,11 +69,11 @@ module ModelStubbing
       end
       
       record.id = @model.model_class.mock_id
-      record.stubbed_attributes = attributes.merge(:id => record.id)
-      attributes.each do |key, value|
+      record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
+      stubbed_attributes.each do |key, value|
         if value.is_a? Stub
           # set foreign key
-          record[attributes.column_name_for(key)] = value.record.id
+          record[stubbed_attributes.column_name_for(key)] = value.record.id
           # set association
           meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
           record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
@@ -82,7 +82,7 @@ module ModelStubbing
         end
       end
    
-      @model.records[self] = record if default_record
+      ModelStubbing.records[record_key(attributes)] = record if default_record
       record
     end
     
@@ -92,8 +92,13 @@ module ModelStubbing
       end
     end
     
-    def retrieve
-      @model.records[self]
+    def retrieve(attributes = {})
+      ModelStubbing.records[record_key(attributes)]
+    end
+    
+    # so that duped stubs with duplicate attributes reuse the same record
+    def record_key(attributes)
+      @record_key ||= [model.model_class.name, @global_key, @attributes.merge(attributes).inspect] * ":"
     end
   end
   
