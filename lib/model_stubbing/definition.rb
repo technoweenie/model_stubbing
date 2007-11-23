@@ -65,6 +65,8 @@ module ModelStubbing
           if klass.is_a?(Class)
             if defined?(Spec::DSL::ExampleGroup) && !klass.ancestors.include?(RspecExtension) && klass.ancestors.include?(Spec::DSL::ExampleGroup)
               include RspecExtension
+            elsif defined?(Test::Spec) && !klass.ancestors.include?(TestSpecExtension) && klass.ancestors.include?(Test::Spec::TestCase::InstanceMethods)
+              include TestSpecExtension
             elsif defined?(Test::Unit::TestCase) && !klass.ancestors.include?(TestUnitExtension) && klass.ancestors.include?(Test::Unit::TestCase)
               include TestUnitExtension
             end

@@ -59,20 +59,36 @@ protected
   # Included into the current rspec example when #define_models is called.
   module RspecExtension
     def self.included(base)
-      base.prepend_before(:all) do
+      base.prepend_before :all do
         if self.class.definition.insert?
           ActiveRecord::Base.transaction do
             self.class.definition.models.values.each(&:insert)
           end
         end
       end
-      base.prepend_before do
+      base.prepend_before :each do
+        ModelStubbing.stub_current_time_with(current_time) if current_time
+      end
+    end
+  end
+
+  # Included into the current test/spec example when #define_models is called.
+  module TestSpecExtension
+    def self.included(base)
+      base.before :all do
+        if self.class.definition.insert?
+          ActiveRecord::Base.transaction do
+            self.class.definition.models.values.each(&:insert)
+          end
+        end
+      end
+      base.before :each do
         ModelStubbing.stub_current_time_with(current_time) if current_time
       end
     end
   end
   
-  # Included into Test::Unit::TestCase when #define_models is calle.d
+  # Included into Test::Unit::TestCase when #define_models is called.
   module TestUnitExtension
     def self.included(base)
       base.class_eval do
