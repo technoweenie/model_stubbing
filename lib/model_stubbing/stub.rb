@@ -53,14 +53,18 @@ module ModelStubbing
     end
     
     def with(attributes)
-      @attributes.merge(attributes)
+      @attributes.inject({}) do |attr, (key, value)|
+        attr_value = attributes[key] || value
+        attr_value = attr_value.record if attr_value.is_a?(Stub)
+        attr.update key => attr_value
+      end
     end
     
     def only(*keys)
       keys = Set.new Array(keys)
       @attributes.inject({}) do |attr, (key, value)|
         if keys.include?(key)
-          attr.update key => value
+          attr.update key => (value.is_a?(Stub) ? value.record : value)
         else
           attr
         end
@@ -73,7 +77,7 @@ module ModelStubbing
         if keys.include?(key)
           attr
         else
-          attr.update key => value
+          attr.update key => (value.is_a?(Stub) ? value.record : value)
         end
       end
     end

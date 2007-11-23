@@ -25,9 +25,10 @@ module ModelStubbing
       options = name
       name    = nil
     end
-    name ||= is_a?(Class) ? self : :default
-    base   = name == :default ? nil : ModelStubbing.definitions[:default]
-    defn   = ModelStubbing.definitions[name] ||= (base && options[:copy] != false) ? base.dup : ModelStubbing::Definition.new
+    name    ||= is_a?(Class) ? self : :default
+    base_name = options[:copy] || :default
+    base      = name == base_name ? nil : ModelStubbing.definitions[base_name]
+    defn      = ModelStubbing.definitions[name] ||= (base && options[:copy] != false) ? base.dup : ModelStubbing::Definition.new
     defn.insert = false if options[:insert] == false
     defn.instance_eval(&block) if block
     defn.setup_on self

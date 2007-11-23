@@ -16,18 +16,19 @@ describe Stub do
   
   it "has the default stub's attributes" do
     @user.attributes.should == {:name => 'bob', :admin => false}
+    @post.attributes.should == {:title => 'initial', :user => @users.stubs[:admin], :published_at => @definition.current_time + 5.days}
   end
   
   it "#with returns merged attributes" do
-    @user.with(:name => 'fred').should == {:name => 'fred', :admin => false}
+    @post.with(:title => 'fred').should == {:title => 'fred', :user => @users.stubs[:admin].record, :published_at => @definition.current_time + 5.days}
   end
   
   it "#only returns only given keys" do
-    @user.only(:name).should == {:name => 'bob'}
+    @post.only(:title).should == {:title => 'initial'}
   end
   
   it "#except returns other keys" do
-    @user.except(:admin).should == {:name => 'bob'}
+    @post.except(:published_at).should == {:title => 'initial', :user => @users.stubs[:admin].record}
   end
   
   it "merges named stub attributes with default attributes" do
@@ -87,8 +88,9 @@ end
 
 describe Stub, "duping itself with different model" do
   before :all do
-    @stub = ModelStubbing.definitions[:default].models[:users].default
-    @copy = @stub.dup ModelStubbing.definitions[:default].models[:posts]
+    @defn = ModelStubbing.definitions[:default]
+    @stub = @defn.models[:users].default
+    @copy = @stub.dup @defn.models[:posts].dup
   end
   
   %w(name attributes).each do |attr|
