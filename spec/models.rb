@@ -27,7 +27,9 @@ end
 class BlankModel
   attr_accessor :id
   attr_reader :attributes
-  
+
+  def new_record?() @new_record end
+
   def initialize(attributes = {})
     @attributes = attributes
     attributes.each do |key, value|

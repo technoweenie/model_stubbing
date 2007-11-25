@@ -39,6 +39,7 @@ module ModelStubbing
     end
     
     # Retrieves or creates a record based on the stub's set attributes and the given custom attributes.
+    # pass :id => :new to specify you want a new record, not one in the database
     def record(attributes = {})
       this_record_key = record_key(attributes)
       ModelStubbing.records[this_record_key] ||= instantiate(this_record_key, attributes)
@@ -89,16 +90,26 @@ module ModelStubbing
   
   private
     def instantiate(this_record_key, attributes)
+      if attributes[:id] == :new
+        is_new_record = true
+        attributes.delete(:id)
+      end
+      
       stubbed_attributes = stubbed_attributes(@attributes.merge(attributes))
-
+      
       record = @model.model_class.new
       meta   = class << record
         attr_accessor :stubbed_attributes
-        def new_record?() false end
+        attr_writer   :new_record
         self
       end
       
-      record.id = ModelStubbing.record_ids[this_record_key] ||= @model.model_class.mock_id
+      if is_new_record
+        record.new_record = true
+      else
+        record.new_record = false
+        record.id = ModelStubbing.record_ids[this_record_key] ||= attributes[:id] || @model.model_class.mock_id
+      end
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
         if value.is_a? Stub

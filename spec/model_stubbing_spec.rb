@@ -14,7 +14,7 @@ describe "Sample Stub Usage" do
     end
   end
   
-  it "should retrieve stubs" do
+  it "retrieves stubs" do
     users(:default).name.should == 'fred'
     users(:default).admin.should == false
     
@@ -22,21 +22,35 @@ describe "Sample Stub Usage" do
     users(:admin).admin.should == true
   end
   
-  it "should retrieve instantiated stubs" do
-    users(:default).id.should == users(:default).id
+  it "retrieves new records based on stubs" do
+    record = new_user(:default)
+    record.name.should == 'fred'
+    record.admin.should == false
   end
   
-  it "should generate custom stubs" do
+  it "retrieves instantiated stubs" do
+    users(:default).id.should == users(:default).id
+    users(:default).should_not be_new_record
+  end
+  
+  it "retrieves instantiated new records based on stubs" do
+    record = new_user(:default)
+    record.id.should be_nil
+    record.should be_new_record
+  end
+
+  it "generates custom stubs" do
     default = users(:default)
     custom  = users(:default, :admin => true)
     custom.id.should_not == default.id
+    custom.id.should == users(:default, :admin => true).id
   end
   
-  it "should associate stubs" do
+  it "associates stubs" do
     posts(:default).user.should == users(:admin)
   end
   
-  it "should stub current time" do
+  it "stubbs current time" do
     current_time.should == Time.utc(2007, 6, 1)
     posts(:default).published_at.should == Time.utc(2007, 6, 6)
   end

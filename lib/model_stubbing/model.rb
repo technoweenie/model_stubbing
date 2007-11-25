@@ -72,7 +72,8 @@ module ModelStubbing
     end
     
     def stub_method_definition
-      "def #{@plural}(key, attributes = {}) self.class.definition.models[#{@plural.inspect}].retrieve_record(key, attributes) end"
+      "def #{@plural}(key, attributes = {}) self.class.definition.models[#{@plural.inspect}].retrieve_record(key, attributes) end\n
+      def new_#{@singular}(key, attributes = {}) #{@plural}(key, attributes.merge(:id => :new)) end"
     end
 
     def inspect

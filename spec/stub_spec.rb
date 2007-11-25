@@ -132,6 +132,10 @@ describe Stub, "instantiating a record" do
     @record.should be_kind_of(@model.model_class)
   end
   
+  it "is a saved record" do
+    @stub.record.should_not be_new_record
+  end
+  
   it "sets correct attributes" do
     @record  = @stub.record
     @record.name.should  == 'bob'
@@ -145,6 +149,46 @@ describe Stub, "instantiating a record" do
   
   it "allows use of #current_time in a stub" do
     ModelStubbing.definitions[:default].models[:posts].default.record.published_at.should == Time.utc(2007, 6, 6)
+  end
+end
+
+describe Stub, "instantiating a new record" do
+  before :all do
+    @model   = ModelStubbing.definitions[:default].models[:users]
+    @stub = @model.default
+  end
+  
+  before do
+    ModelStubbing.records.clear
+    ModelStubbing.record_ids.clear
+  end
+  
+  it "sets id" do
+    @stub.record(:id => :new).id.should be_nil
+  end
+  
+  it "is one of the model's model class" do
+    @record  = @stub.record(:id => :new)
+    @record.should be_kind_of(@model.model_class)
+  end
+  
+  it "is a new record" do
+    @stub.record(:id => :new).should be_new_record
+  end
+  
+  it "sets correct attributes" do
+    @record  = @stub.record(:id => :new)
+    @record.name.should  == 'bob'
+    @record.admin.should == false
+  end
+  
+  it "allows custom attributes during instantiation" do
+    @record  = @stub.record :admin => true, :id => :new
+    @record.admin.should == true
+  end
+  
+  it "allows use of #current_time in a stub" do
+    ModelStubbing.definitions[:default].models[:posts].default.record(:id => :new).published_at.should == Time.utc(2007, 6, 6)
   end
 end
 

@@ -24,13 +24,26 @@ class SampleTest < Test::Unit::TestCase
     assert users(:admin).admin
   end
   
+  def test_should_retrieve_new_records_based_on_stubs
+    record = new_user(:default)
+    assert_equal 'fred', record.name
+    assert_equal false,  record.admin
+  end
+  
   def test_should_retrieve_instantiated_stubs
     assert_equal users(:default).id, users(:default).id
+  end
+  
+  def test_should_retrieve_instantiated_new_records_based_on_stubs
+    record = new_user(:default)
+    assert_nil record.id
+    assert     record.new_record?
   end
   
   def test_should_generate_custom_stubs
     custom = users(:default, :admin => true)
     assert_not_equal users(:default).id, custom.id
+    assert_equal custom.id, users(:default, :admin => true).id
   end
   
   def test_should_associate_stubs
