@@ -10,7 +10,7 @@ module Test #:nodoc:
       end
       
       def setup_with_model_stubs
-        return if !self.class.respond_to?(:definition) || self.class.definition.nil?
+        return unless self.class.definition
         unless self.class.definition_inserted
           self.class.definition.insert!
           self.class.definition_inserted = true
@@ -20,7 +20,7 @@ module Test #:nodoc:
       alias_method :setup, :setup_with_model_stubs
 
       def teardown_with_model_stubs
-        self.class.definition.teardown_test_run
+        self.class.definition && self.class.definition.teardown_test_run
       end
       alias_method :teardown, :teardown_with_model_stubs
 
@@ -46,11 +46,11 @@ module Test #:nodoc:
       end
 
       def stubs(key)
-        self.class.definition.stubs[key]
+        self.class.definition && self.class.definition.stubs[key]
       end
       
       def current_time
-        self.class.definition.current_time
+        self.class.definition && self.class.definition.current_time
       end
     end
   end
