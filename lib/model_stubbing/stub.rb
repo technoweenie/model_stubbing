@@ -40,7 +40,8 @@ module ModelStubbing
     
     # Retrieves or creates a record based on the stub's set attributes and the given custom attributes.
     def record(attributes = {})
-      attributes.empty? && ModelStubbing.records.key?(record_key(attributes)) ? retrieve(attributes) : instantiate(attributes)
+      this_record_key = record_key(attributes)
+      ModelStubbing.records[this_record_key] ||= instantiate(this_record_key, attributes)
     end
     
     def inspect
@@ -87,8 +88,7 @@ module ModelStubbing
     end
   
   private
-    def instantiate(attributes)
-      default_record     = attributes.empty?
+    def instantiate(this_record_key, attributes)
       stubbed_attributes = stubbed_attributes(@attributes.merge(attributes))
 
       record = @model.model_class.new
@@ -98,7 +98,7 @@ module ModelStubbing
         self
       end
       
-      record.id = @model.model_class.mock_id
+      record.id = ModelStubbing.record_ids[this_record_key] ||= @model.model_class.mock_id
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
         if value.is_a? Stub
@@ -111,8 +111,6 @@ module ModelStubbing
           record[key] = value
         end
       end
-   
-      ModelStubbing.records[record_key(attributes)] = record if default_record
       record
     end
     
@@ -122,13 +120,12 @@ module ModelStubbing
       end
     end
     
-    def retrieve(attributes = {})
-      ModelStubbing.records[record_key(attributes)]
-    end
-    
     # so that duped stubs with duplicate attributes reuse the same record
     def record_key(attributes)
-      @record_key ||= [model.model_class.name, @global_key, @attributes.merge(attributes).inspect] * ":"
+      return @record_key if @record_key && attributes.empty?
+      key = [model.model_class.name, @global_key, @attributes.merge(attributes).inspect] * ":"
+      @record_key = key if attributes.empty?
+      key 
     end
   end
   

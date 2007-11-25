@@ -2,8 +2,6 @@ require File.join(File.dirname(__FILE__), 'models')
 require 'test/unit'
 require 'mocha'
 
-Test::Unit::TestCase.extend ModelStubbing
-
 class SampleTest < Test::Unit::TestCase
   define_models do
     time 2007, 6, 1
@@ -33,7 +31,6 @@ class SampleTest < Test::Unit::TestCase
   def test_should_generate_custom_stubs
     custom = users(:default, :admin => true)
     assert_not_equal users(:default).id, custom.id
-    assert_not_equal custom.id, users(:default, :admin => true).id
   end
   
   def test_should_associate_stubs

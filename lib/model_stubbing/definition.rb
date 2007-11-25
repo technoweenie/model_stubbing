@@ -59,40 +59,13 @@ module ModelStubbing
     #
     # Shortcut methods for each model are generated as well.  users(:default) accesses
     # the default user stub, and users(:admin) accesses the 'admin' user stub.
-    def setup_on(klass)
-      unless klass.respond_to?(:definition) && klass.definition
-        klass.class_eval do
-          if klass.is_a?(Class)
-            if defined?(Spec::DSL::ExampleGroup) && !klass.ancestors.include?(RspecExtension) && klass.ancestors.include?(Spec::DSL::ExampleGroup)
-              include RspecExtension
-            elsif defined?(Test::Spec) && !klass.ancestors.include?(TestSpecExtension) && klass.ancestors.include?(Test::Spec::TestCase::InstanceMethods)
-              include TestSpecExtension
-            elsif defined?(Test::Unit::TestCase) && !klass.ancestors.include?(TestUnitExtension) && klass.ancestors.include?(Test::Unit::TestCase)
-              include TestUnitExtension
-            end
-          end
-          def stubs(key)
-            self.class.definition.stubs[key]
-          end
-          
-          def current_time
-            self.class.definition.current_time
-          end
-          
-          def setup_definition_for_test_run
-            if !self.class.definition_inserted && self.class.definition.insert?
-              ActiveRecord::Base.transaction do
-                self.class.definition.models.values.each(&:insert)
-              end
-              self.class.definition_inserted = true
-            end
-            ModelStubbing.stub_current_time_with(current_time) if current_time
-          end
-        end
-        (class << klass ; self ; end).send :attr_accessor, :definition, :definition_inserted
-        klass.definition = self
+    def setup_on(base, options = {}, &block)
+      self.insert = false if options[:insert] == false
+      self.instance_eval(&block) if block
+      if base.ancestors.include? Test::Unit::TestCase
+        base.definition = self
+        base.create_model_methods_for models.values
       end
-      klass.class_eval models.values.collect { |model| model.stub_method_definition }.join("\n")
     end
     
     # Retrieves a record for a given stub.  The optional attributes hash let's you specify
@@ -105,6 +78,27 @@ module ModelStubbing
     
     def insert?
       @insert != false && database?
+    end
+    
+    def insert!
+      return unless database? && insert?
+      ActiveRecord::Base.transaction do
+        models.values.each(&:insert)
+      end
+    end
+    
+    def setup_test_run
+      ModelStubbing.records.clear
+      ModelStubbing.stub_current_time_with(current_time) if current_time
+      return unless database?
+      ActiveRecord::Base.send :increment_open_transactions
+      ActiveRecord::Base.connection.begin_db_transaction
+    end
+    
+    def teardown_test_run
+      return unless database?
+      ActiveRecord::Base.connection.rollback_db_transaction
+      ActiveRecord::Base.verify_active_connections!
     end
     
     def database?

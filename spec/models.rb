@@ -8,7 +8,10 @@ rescue LoadError
   puts $!.to_s
 end
 
-class FakeTester
+class FakeTester < Test::Unit::TestCase
+  def test_booya
+    assert true
+  end
 end
 
 class FakeConnection

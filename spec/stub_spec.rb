@@ -120,6 +120,7 @@ describe Stub, "instantiating a record" do
   
   before do
     ModelStubbing.records.clear
+    ModelStubbing.record_ids.clear
   end
   
   it "sets id" do
@@ -158,6 +159,7 @@ describe Stub, "instantiating a record with an association" do
   
   before do
     ModelStubbing.records.clear
+    ModelStubbing.record_ids.clear
   end
   
   it "stubs associated records" do

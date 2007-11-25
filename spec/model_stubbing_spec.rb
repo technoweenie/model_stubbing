@@ -1,8 +1,5 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-# support rspec 1.0.8 and edge
-(Spec::DSL.const_defined?(:ExampleGroup) ? Spec::DSL::ExampleGroup : Spec::DSL::Example).extend ModelStubbing
-
 describe "Sample Stub Usage" do
   define_models do
     time 2007, 6, 1
@@ -30,9 +27,9 @@ describe "Sample Stub Usage" do
   end
   
   it "should generate custom stubs" do
-    custom = users(:default, :admin => true)
-    custom.id.should_not == users(:default).id
-    users(:default, :admin => true).id.should_not == custom.id
+    default = users(:default)
+    custom  = users(:default, :admin => true)
+    custom.id.should_not == default.id
   end
   
   it "should associate stubs" do

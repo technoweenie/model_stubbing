@@ -19,7 +19,7 @@ describe Definition do
   end
   
   it "retrieves default stubs" do
-    @definition.retrieve_record(:user).should       == @definition.models[:users].default.record
+    @definition.retrieve_record(:user).should == @definition.models[:users].default.record
   end
   
   it "retrieves stubs" do
@@ -30,7 +30,7 @@ end
 describe Definition, "setup" do
   before :all do
     @definition = ModelStubbing.definitions[:default]
-    @tester = FakeTester.new
+    @tester = FakeTester.new :test_booya
   end
   
   it "sets definition value" do
@@ -46,7 +46,7 @@ describe Definition, "setup" do
   end
   
   it "retrieves default stubs with stub model method" do
-    @tester.users(:default).should       == @definition.models[:users].default.record
+    @tester.users(:default).should == @definition.models[:users].default.record
   end
   
   it "retrieves stubs with stub model method" do

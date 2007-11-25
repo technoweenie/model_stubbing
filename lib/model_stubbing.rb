@@ -1,3 +1,4 @@
+require 'model_stubbing/extensions'
 require 'model_stubbing/definition'
 require 'model_stubbing/model'
 require 'model_stubbing/stub'
@@ -6,6 +7,9 @@ module ModelStubbing
   extend self
   # Gets a hash of all current definitions.
   def self.definitions() @definitions ||= {} end
+  # stores {stub => record_id} so that identical stubs keep the same ID
+  def self.record_ids()  @record_ids  ||= {} end
+  # stores {record_id => instantiated stubs}.  reset after each spec
   def self.records()     @records     ||= {} end
 
   # Creates a new ModelStubbing::Definition.  If called from within a class,
@@ -29,9 +33,7 @@ module ModelStubbing
     base_name = options[:copy] || :default
     base      = name == base_name ? nil : ModelStubbing.definitions[base_name]
     defn      = ModelStubbing.definitions[name] ||= (base && options[:copy] != false) ? base.dup : ModelStubbing::Definition.new
-    defn.insert = false if options[:insert] == false
-    defn.instance_eval(&block) if block
-    defn.setup_on self
+    defn.setup_on self, options, &block
   end
 
 protected
@@ -56,36 +58,6 @@ protected
         end
     end
   end
-
-  # Included into the current rspec example when #define_models is called.
-  module RspecExtension
-    def self.included(base)
-      base.prepend_before :each do
-        setup_definition_for_test_run
-      end
-    end
-  end
-
-  # Included into the current test/spec example when #define_models is called.
-  module TestSpecExtension
-    def self.included(base)
-      base.before :each do
-        setup_definition_for_test_run
-      end
-    end
-  end
-  
-  # Included into Test::Unit::TestCase when #define_models is called.
-  module TestUnitExtension
-    def self.included(base)
-      base.class_eval do
-        alias setup_without_model_stubbing setup
-        alias setup setup_with_model_stubbing
-      end
-    end
-    
-    def setup_with_model_stubbing
-      setup_definition_for_test_run
-    end
-  end
 end
+
+Test::Unit::TestCase.extend ModelStubbing
