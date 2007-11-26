@@ -63,6 +63,9 @@ module ModelStubbing
       self.insert = false if options[:insert] == false
       self.instance_eval(&block) if block
       if base.ancestors.include? Test::Unit::TestCase
+        unless base.ancestors.include?(ModelStubbing::Extension)
+          base.send :include, ModelStubbing::Extension
+        end
         base.definition = self
         base.create_model_methods_for models.values
       end
