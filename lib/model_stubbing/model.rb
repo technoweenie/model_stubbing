@@ -23,7 +23,7 @@ module ModelStubbing
     def initialize(definition, klass, options = {}, &block)
       @definition  = definition
       @model_class = klass
-      @name        = options[:name]     || klass.table_name.to_sym
+      @name        = options[:name]     || default_name.to_sym
       @plural      = options[:plural]   || name
       @singular    = options[:singular] || name.to_s.singularize
       @stubs       = {}
@@ -36,6 +36,15 @@ module ModelStubbing
         end
       end
       instance_eval &block if block
+    end
+    
+    def default_name
+      name = @model_class.name
+      if name.respond_to?(:underscore)
+        name.underscore.pluralize.gsub(/\//, '_')
+      else
+        name.downcase.gsub(/::/, '_') << "s"
+      end
     end
     
     def dup(definition = nil)

@@ -3,6 +3,7 @@ dir = File.dirname(__FILE__)
 # look for spec as plugin, in lib, or as a gem
 $LOAD_PATH << File.join(dir, '..', '..', 'rspec', 'lib')
 $LOAD_PATH << File.join(dir, '..', '..', '..', 'rspec', 'lib')
+
 begin
   require 'spec'
 rescue LoadError

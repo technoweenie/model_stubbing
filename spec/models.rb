@@ -60,16 +60,10 @@ private
   end
 end
 
-User = Class.new BlankModel do
-  def self.table_name() @table_name ||= 'users' end
-end
-Post = Class.new BlankModel do
-  def self.table_name() @table_name ||= 'posts' end
-end
+User = Class.new BlankModel
+Post = Class.new BlankModel
 module Foo
-  Bar = Class.new BlankModel do
-    def self.table_name() @table_name ||= 'foo_bars' end
-  end
+  Bar = Class.new BlankModel
 end
 
 ModelStubbing.define_models do
