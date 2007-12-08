@@ -69,7 +69,14 @@ describe Definition, "duping itself" do
   end
 
   it "transfers ordered_models" do
-    @copy.ordered_models.should == @defn.ordered_models
+    @copy.ordered_models.collect(&:name).should == @defn.ordered_models.collect(&:name)
+  end
+  
+  it "dups ordered_model instances" do
+    @copy.ordered_models.each_with_index do |model, i|
+      @copy.ordered_models[i].should == @defn.ordered_models[i]
+      @copy.ordered_models[i].should_not be_equal(@defn.ordered_models[i])
+    end
   end
 
   it "dups each model" do

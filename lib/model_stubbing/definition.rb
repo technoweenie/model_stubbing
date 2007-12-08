@@ -37,10 +37,12 @@ module ModelStubbing
     
     def dup
       copy = self.class.new
-      copy.ordered_models.push *@ordered_models
       copy.current_time = @current_time
       models.each do |name, model|
         copy.models[name] = model.dup(copy)
+      end
+      @ordered_models.each do |ordered|
+        copy.ordered_models << copy.models[ordered.name]
       end
       stubs.each do |name, stub|
         copy.stubs[name] = copy.models[stub.model.name].stubs[stub.name]
