@@ -7,6 +7,7 @@ module ModelStubbing
     attr_writer :current_time
     attr_reader :models
     attr_reader :stubs
+    attr_reader :ordered_models
 
     # Sets the time that Time.now is mocked to (in UTC)
     def time(*args)
@@ -21,14 +22,16 @@ module ModelStubbing
     # any added stubs to the same model instance.
     def model(klass, options = {}, &block)
       m = Model.new(self, klass, options)
+      @ordered_models <<  m unless @models.key?(m.name)
       @models[m.name] ||= m
       @models[m.name].instance_eval(&block) if block
       @models[m.name]
     end
     
     def initialize(&block)
-      @models = {}
-      @stubs  = {}
+      @ordered_models = []
+      @models         = {}
+      @stubs          = {}
       instance_eval &block if block
     end
     
@@ -86,7 +89,7 @@ module ModelStubbing
     def insert!
       return unless database? && insert?
       ActiveRecord::Base.transaction do
-        models.values.each(&:insert)
+        ordered_models.values.each(&:insert)
       end
     end
     

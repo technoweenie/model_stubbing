@@ -25,6 +25,10 @@ describe Definition do
   it "retrieves stubs" do
     @definition.retrieve_record(:admin_user).should == @definition.models[:users].stubs[:admin].record
   end
+  
+  it "keeps order of defined models" do
+    @definition.ordered_models.should == [@definition.models[:users], @definition.models[:foo_bars], @definition.models[:posts]]
+  end
 end
 
 describe Definition, "setup" do
