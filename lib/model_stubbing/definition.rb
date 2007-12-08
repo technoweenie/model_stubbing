@@ -37,6 +37,7 @@ module ModelStubbing
     
     def dup
       copy = self.class.new
+      copy.ordered_models.push *@ordered_models
       copy.current_time = @current_time
       models.each do |name, model|
         copy.models[name] = model.dup(copy)

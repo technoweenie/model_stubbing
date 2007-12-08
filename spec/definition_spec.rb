@@ -67,7 +67,11 @@ describe Definition, "duping itself" do
   it "dups @current_time" do
     @defn.current_time.should == @copy.current_time
   end
-  
+
+  it "transfers ordered_models" do
+    @copy.ordered_models.should == @defn.ordered_models
+  end
+
   it "dups each model" do
     @defn.models.each do |name, model|
       duped_model = @copy.models[name]
