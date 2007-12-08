@@ -89,7 +89,7 @@ module ModelStubbing
     def insert!
       return unless database? && insert?
       ActiveRecord::Base.transaction do
-        ordered_models.values.each(&:insert)
+        ordered_models.each(&:insert)
       end
     end
     
