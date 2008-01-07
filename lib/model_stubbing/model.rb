@@ -96,7 +96,8 @@ module ModelStubbing
     end
     
     def purge
-      model_class.connection.execute "TRUNCATE TABLE #{connection.quote_column_name model_class.table_name}"
+      no_truncate = model_class.connection.is_a?(ActiveRecord::ConnectionAdapters::SQLiteAdapter)
+      model_class.connection.execute "#{no_truncate ? "DELETE FROM" : "TRUNCATE TABLE"} #{connection.quote_column_name model_class.table_name}"
     end
     
     def connection
