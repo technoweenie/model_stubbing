@@ -164,8 +164,11 @@ module ModelStubbing
         value = self[key]
         if value.is_a? Stub
           if defined?(ActiveRecord)
-            reflection = model_class.reflect_on_association(key)
-            reflection.primary_key_name
+            if reflection = model_class.reflect_on_association(key)
+              reflection.primary_key_name
+            else
+              raise "No reflection '#{key}' found for #{model_class.name} while guessing column_name"
+            end
           else
             "#{key}_id"
           end
