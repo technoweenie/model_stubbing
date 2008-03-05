@@ -108,7 +108,7 @@ module ModelStubbing
         record.new_record = true
       else
         record.new_record = false
-        record.id = ModelStubbing.record_ids[this_record_key] ||= attributes[:id] || @model.model_class.mock_id
+        record.id = ModelStubbing.record_ids[this_record_key] ||= attributes[:id] || @model.model_class.base_class.mock_id
       end
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
