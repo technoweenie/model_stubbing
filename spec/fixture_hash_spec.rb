@@ -4,7 +4,7 @@ module ModelStubbing
   describe FixtureHash do
     before :all do
       @definition = ModelStubbing.definitions[:default]
-      @users      = @definition.models[:users]
+      @users      = @definition.models[:model_stubbing_users]
       @user       = @users.default
       @user.stub!(:connection).and_return(FakeConnection.new)
       @fixture    = FixtureHash.new(@user).update :foo => 1, :bar => :baz

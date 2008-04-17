@@ -12,7 +12,7 @@ describe "Sample" do
     end
   
     model Post do
-      stub :title => 'first', :user => all_stubs(:admin_user), :published_at => current_time + 5.days
+      stub :title => 'first', :user => all_stubs(:admin_model_stubbing_user), :published_at => current_time + 5.days
     end
   end
   

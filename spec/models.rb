@@ -1,4 +1,5 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
+require "test/unit"
 require 'rubygems'
 require 'ruby-debug'
 require 'model_stubbing'
@@ -8,87 +9,93 @@ rescue LoadError
   puts $!.to_s
 end
 
-class FakeTester < Test::Unit::TestCase
-  def test_booya
-    assert true
-  end
-end
-
-class FakeConnection
-  def quote_column_name(name)
-    "`#{name}`"
-  end
-  
-  def quote(value, whatever)
-    value.to_s.inspect
-  end
-end
-
-class BlankModel
-  attr_accessor :id
-  attr_reader :attributes
-
-  def new_record?() @new_record end
-
-  def initialize(attributes = {})
-    @attributes = attributes
-    attributes.each do |key, value|
-      set_attribute key, value
+module ModelStubbing
+  class FakeTester < Test::Unit::TestCase
+    def test_booya
+      assert true
     end
   end
   
-  def []=(key, value)
-    set_attribute key, value
+  class FakeConnection
+    def quote_column_name(name)
+      "`#{name}`"
+    end
+    
+    def quote(value, whatever)
+      value.to_s.inspect
+    end
   end
   
-  def ==(other_model)
-    self.class == other_model.class && id == other_model.id
+  class BlankModel
+    attr_accessor :id
+    attr_reader :attributes
+  
+    def self.base_class
+      self
+    end
+  
+    def new_record?() @new_record end
+  
+    def initialize(attributes = {})
+      @attributes = attributes
+      attributes.each do |key, value|
+        set_attribute key, value
+      end
+    end
+    
+    def []=(key, value)
+      set_attribute key, value
+    end
+    
+    def ==(other_model)
+      self.class == other_model.class && id == other_model.id
+    end
+    
+    def inspect
+      "#{self.class.name} ##{id} => #{@attributes.inspect}"
+    end
+  
+  private
+    def meta_class
+      @meta_class ||= class << self; self end
+    end
+  
+    def set_attribute(key, value)
+      meta_class.send :attr_accessor, key
+      send "#{key}=", value
+    end
   end
   
-  def inspect
-    "#{self.class.name} ##{id} => #{@attributes.inspect}"
+  User = Class.new BlankModel
+  Post = Class.new BlankModel
+  module Foo
+    Bar = Class.new BlankModel
   end
 
-private
-  def meta_class
-    @meta_class ||= class << self; self end
+  define_models do
+    time 2007, 6, 1
+    
+    model User do
+      stub :name => 'bob', :admin => false
+    end
+    
+    model Foo::Bar do
+      stub :blah => 'foo'
+    end
   end
 
-  def set_attribute(key, value)
-    meta_class.send :attr_accessor, key
-    send "#{key}=", value
+  define_models do
+    model User do
+      stub :admin, :admin => true # inherits from default fixture
+    end
+    
+    model Post do
+      # uses admin user fixture above
+      stub :title => 'initial', :user => all_stubs(:admin_model_stubbing_user), :published_at => current_time + 5.days
+    end
   end
+  
+  definitions[:default].setup_on FakeTester
 end
-
-User = Class.new BlankModel
-Post = Class.new BlankModel
-module Foo
-  Bar = Class.new BlankModel
-end
-
-ModelStubbing.define_models do
-  time 2007, 6, 1
-  
-  model User do
-    stub :name => 'bob', :admin => false
-  end
-  
-  model Foo::Bar do
-    stub :blah => 'foo'
-  end
-end
-
-ModelStubbing.define_models do
-  model User do
-    stub :admin, :admin => true # inherits from default fixture
-  end
-  
-  model Post do
-    # uses admin user fixture above
-    stub :title => 'initial', :user => all_stubs(:admin_user), :published_at => current_time + 5.days
-  end
-end
-
-ModelStubbing.definitions[:default].setup_on FakeTester
 
 Debugger.start
