@@ -99,7 +99,7 @@ module ModelStubbing
     end
     
     def purge
-      model_class.delete_all
+      connection.delete "DELETE FROM #{connection.quote_table_name(model_class.table_name)}", 'Fixture Delete'
     end
     
     def connection
