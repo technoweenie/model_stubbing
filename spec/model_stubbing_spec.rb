@@ -2,6 +2,7 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 module ModelStubbing
   describe "Sample Stub Usage" do
+
     define_models do
       time 2007, 6, 1
     
@@ -51,7 +52,7 @@ module ModelStubbing
       model_stubbing_posts(:default).user.should == model_stubbing_users(:admin)
     end
     
-    it "stubbs current time" do
+    it "stubs current time" do
       current_time.should == Time.utc(2007, 6, 1)
       model_stubbing_posts(:default).published_at.should == Time.utc(2007, 6, 6)
     end

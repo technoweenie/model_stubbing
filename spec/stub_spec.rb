@@ -2,6 +2,7 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 module ModelStubbing
   describe Stub do
+
     before :all do
       @definition = ModelStubbing.definitions[:default]
       @users      = @definition.models[:model_stubbing_users]

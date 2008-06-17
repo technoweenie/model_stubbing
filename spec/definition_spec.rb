@@ -27,7 +27,7 @@ module ModelStubbing
     end
     
     it "keeps order of defined models" do
-      @definition.ordered_models.should == [@definition.models[:model_stubbing_users], @definition.models[:model_stubbing_foo_bars], @definition.models[:model_stubbing_posts]]
+      @definition.ordered_models.should == [@definition.models[:model_stubbing_users], @definition.models[:model_stubbing_foo_bars], @definition.models[:model_stubbing_tags], @definition.models[:model_stubbing_posts]]
     end
   end
   

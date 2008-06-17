@@ -61,3 +61,4 @@ protected
 end
 
 Test::Unit::TestCase.extend ModelStubbing
+Spec::Example::ExampleGroup.extend ModelStubbing if defined? Spec::Example::ExampleGroup

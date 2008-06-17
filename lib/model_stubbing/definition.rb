@@ -68,7 +68,7 @@ module ModelStubbing
     def setup_on(base, options = {}, &block)
       self.insert = false if options[:insert] == false
       self.instance_eval(&block) if block
-      if base.ancestors.include? Test::Unit::TestCase
+      if base.ancestors.any? { |a| a.to_s == "Test::Unit::TestCase" || a.to_s == "Spec::Example::ExampleGroup" }
         unless base.ancestors.include?(ModelStubbing::Extension)
           base.send :include, ModelStubbing::Extension
         end
