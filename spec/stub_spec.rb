@@ -176,6 +176,10 @@ module ModelStubbing
       @stub.record(:id => :new).should be_new_record
     end
   
+    it "is a unique new record" do
+      @stub.record(:id => :new).object_id.should_not == @stub.record(:id => :new).object_id
+    end
+  
     it "sets correct attributes" do
       @record  = @stub.record(:id => :new)
       @record.name.should  == 'bob'
