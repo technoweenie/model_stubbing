@@ -201,8 +201,12 @@ module ModelStubbing
       @definition = ModelStubbing.definitions[:default]
       @users      = @definition.models[:model_stubbing_users]
       @posts      = @definition.models[:model_stubbing_posts]
+      @tags       = @definition.models[:model_stubbing_tags]
       @user       = @users.stubs[:admin]
       @post       = @posts.default
+      @nice_one   = @posts.stubs[:nice_one]
+      @tag_foo    = @tags.stubs[:foo]
+      @tag_bar    = @tags.stubs[:bar]
     end
   
     before do
@@ -212,6 +216,10 @@ module ModelStubbing
   
     it "stubs associated records" do
       @post.record.user.should == @user.record
+    end
+    
+    it "stubs has_many associated records" do
+      @nice_one.record.tags.should == [@tag_foo.record, @tag_bar.record]
     end
   end
 end

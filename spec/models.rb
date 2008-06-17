@@ -77,6 +77,7 @@ module ModelStubbing
   
   User = Class.new BlankModel
   Post = Class.new BlankModel
+  Tag  = Class.new BlankModel
   module Foo
     Bar = Class.new BlankModel
   end
@@ -94,6 +95,11 @@ module ModelStubbing
   end
 
   define_models do
+    model Tag do
+      stub :foo, :name => "foo"
+      stub :bar, :name => "bar"
+    end
+    
     model User do
       stub :admin, :admin => true # inherits from default fixture
     end
@@ -101,6 +107,7 @@ module ModelStubbing
     model Post do
       # uses admin user fixture above
       stub :title => 'initial', :user => all_stubs(:admin_model_stubbing_user), :published_at => current_time + 5.days
+      stub :nice_one, :title => 'nice one', :tags => [all_stubs(:foo_model_stubbing_tag), all_stubs(:bar_model_stubbing_tag)]
     end
   end
   
