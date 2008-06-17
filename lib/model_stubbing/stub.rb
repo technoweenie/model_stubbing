@@ -51,7 +51,8 @@ module ModelStubbing
     
     def insert(attributes = {})
       object = record(attributes)
-      connection.insert_fixture(object.stubbed_attributes, model.model_class.table_name)
+      object.new_record = true
+      object.save!
     end
     
     def with(attributes)
