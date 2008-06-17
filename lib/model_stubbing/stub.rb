@@ -51,7 +51,6 @@ module ModelStubbing
     
     def insert(attributes = {})
       object = record(attributes)
-      object.id = nil
       object.new_record = true
       object.save!
     end
