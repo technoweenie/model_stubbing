@@ -84,8 +84,8 @@ module ModelStubbing
     end
     
     def stub_method_definition
-      "def #{@plural}(key, attributes = {}) self.class.definition.models[#{@plural.inspect}].retrieve_record(key, attributes) end\n
-      def new_#{@singular}(key, attributes = {}) #{@plural}(key, attributes.merge(:id => :new)) end"
+      "def #{@plural}(key, attrs = {}) self.class.definition.models[#{@plural.inspect}].retrieve_record(key, attrs) end\n
+      def new_#{@singular}(key = :default, attrs = {}) key, attrs = :default, key if key.is_a?(Hash) ; #{@plural}(key, attrs.merge(:id => :new)) end"
     end
 
     def inspect
