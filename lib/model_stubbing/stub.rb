@@ -115,12 +115,12 @@ module ModelStubbing
       stubbed_attributes.each do |key, value|
         if value.is_a? Stub
           # set foreign key
-          record[stubbed_attributes.column_name_for(key)] = value.record.id
+          record.send("#{stubbed_attributes.column_name_for(key)}=", value.record.id)
           # set association
           meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
           record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
         else
-          record[key] = value
+          record.send("#{key}=", value)
         end
       end
       record

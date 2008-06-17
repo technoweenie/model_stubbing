@@ -54,6 +54,14 @@ module ModelStubbing
     def inspect
       "#{self.class.name} ##{id} => #{@attributes.inspect}"
     end
+    
+    def method_missing(name, *args)
+      if name.to_s =~ /(\w+)=$/
+        set_attribute($1, args[0])
+      else
+        super
+      end
+    end
   
   private
     def meta_class
@@ -63,6 +71,7 @@ module ModelStubbing
     def set_attribute(key, value)
       meta_class.send :attr_accessor, key
       send "#{key}=", value
+      attributes[key] = value
     end
   end
   
