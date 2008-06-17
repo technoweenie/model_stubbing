@@ -50,9 +50,10 @@ module ModelStubbing
     end
     
     def insert(attributes = {})
+      @inserting = true
       object = record(attributes)
-      object.new_record = true
       object.save!
+      @inserting = false
     end
     
     def with(attributes)
@@ -111,6 +112,7 @@ module ModelStubbing
         record.new_record = false
         record.id = ModelStubbing.record_ids[this_record_key] ||= attributes[:id] || @model.model_class.base_class.mock_id
       end
+      record.new_record = true if @inserting
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
         if value.is_a? Stub
