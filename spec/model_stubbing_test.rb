@@ -25,9 +25,29 @@ module ModelStubbing
     end
   
     def test_should_retrieve_instantiated_new_records_based_on_stubs
-      record = new_model_stubbing_user(:default)
-      assert_nil record.id
-      assert     record.new_record?
+      record1 = new_model_stubbing_user(:default)
+      assert_nil record1.id
+      assert     record1.new_record?
+      
+      record2 = new_model_stubbing_user
+      assert_nil record2.id
+      assert     record2.new_record?
+      
+      assert_not_equal record1.object_id, record2.object_id
+    end
+  
+    def test_should_save_instantiated_new_records_based_on_stubs
+      record = new_model_stubbing_user!
+      assert !record.id.nil?
+      assert !record.new_record?
+      assert_equal 'bob', record.name
+    end
+  
+    def test_should_save_instantiated_new_records_based_on_stubs_with_custom_attributes
+      record = new_model_stubbing_user!(:name => 'jane')
+      assert !record.id.nil?
+      assert !record.new_record?
+      assert_equal 'jane', record.name
     end
   
     def test_should_generate_custom_stubs

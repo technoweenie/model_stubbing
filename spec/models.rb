@@ -55,6 +55,12 @@ module ModelStubbing
       "#{self.class.name} ##{id} => #{@attributes.inspect}"
     end
     
+    def save
+      @new_record = false
+      self.id = db_id if self.id.nil?
+    end
+    alias :save! :save
+    
     def method_missing(name, *args)
       if name.to_s =~ /(\w+)=$/
         set_attribute($1, args[0])
@@ -72,6 +78,11 @@ module ModelStubbing
       meta_class.send :attr_accessor, key
       send "#{key}=", value
       attributes[key] = value
+    end
+    
+    @@db_id = 0
+    def db_id
+      @@db_id += 1
     end
   end
   

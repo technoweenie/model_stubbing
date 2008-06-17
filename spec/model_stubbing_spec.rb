@@ -24,9 +24,29 @@ module ModelStubbing
     end
     
     it "retrieves instantiated new records based on stubs" do
-      record = new_model_stubbing_user(:default)
-      record.id.should be_nil
-      record.should be_new_record
+      record1 = new_model_stubbing_user(:default)
+      record1.id.should be_nil
+      record1.should be_new_record
+  
+      record2 = new_model_stubbing_user
+      record2.id.should be_nil
+      record2.should be_new_record
+      
+      record1.object_id.should_not == record2.object_id
+    end
+  
+    it "saves instantiated new records based on stubs" do
+      record = new_model_stubbing_user!
+      record.id.should_not be_nil
+      record.should_not be_new_record
+      record.name.should == 'bob'
+    end
+  
+    it "saves instantiated new records based on stubs with custom attributes" do
+      record = new_model_stubbing_user!(:name => 'jane')
+      record.id.should_not be_nil
+      record.should_not be_new_record
+      record.name.should == 'jane'
     end
   
     it "generates custom stubs" do
