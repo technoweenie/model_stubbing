@@ -30,9 +30,16 @@ a different approach.  Oh, and apparently this is an implementation of the Objec
     define_models do
       time 2007, 6, 1
     
+      model Role do
+        stub :owner, :name => 'owner'
+        stub :author, :name => 'author'
+      end
+    
       model User do
         stub :name => 'bob', :admin => false
         stub :admin, :admin => true # inherits from default fixture
+        stub :author, :roles => [all_stubs(:author_role)]
+        stub :owner, :roles => [all_stubs(:author_role), all_stubs(:owner_role)]
       end
     
       model Post do
