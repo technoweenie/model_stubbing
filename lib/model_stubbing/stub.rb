@@ -51,6 +51,7 @@ module ModelStubbing
     
     def insert(attributes = {})
       object = record(attributes)
+      object.id = nil
       object.new_record = true
       object.save!
     end
@@ -119,6 +120,9 @@ module ModelStubbing
           # set association
           meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
           record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
+        elsif value.is_a? Array
+          value.collect! { |v| v.is_a?(Stub) ? v.record : v }
+          record.send("#{key}=", value.compact)          
         else
           record.send("#{key}=", value)
         end

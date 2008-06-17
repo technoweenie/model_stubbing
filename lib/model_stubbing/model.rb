@@ -30,7 +30,7 @@ module ModelStubbing
       unless @model_class.respond_to?(:mock_id)
         class << @model_class
           define_method :mock_id do
-            @mock_id ||= 999
+            @mock_id ||= 9999
             @mock_id  += 1
           end
         end
