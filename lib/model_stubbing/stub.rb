@@ -52,6 +52,7 @@ module ModelStubbing
     def insert(attributes = {})
       @inserting = true
       object = record(attributes)
+      object.new_record = true # record could have returned one from the cache
       object.save!
       @inserting = false
     end
