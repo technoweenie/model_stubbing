@@ -123,8 +123,12 @@ module ModelStubbing
           meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
           record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
         elsif value.is_a? Array
+          # when assigning has_many instantiated stubs, temporarily act as new
+          # otherwise AR inserts rows
           value.collect! { |v| v.is_a?(Stub) ? v.record : v }
-          record.send("#{key}=", value.compact)          
+          nr, record.new_record = record.new_record?, true
+          record.send("#{key}=", value.compact)
+          record.new_record = nr
         else
           record.send("#{key}=", value)
         end
