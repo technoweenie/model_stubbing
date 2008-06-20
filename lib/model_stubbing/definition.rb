@@ -96,6 +96,13 @@ module ModelStubbing
       end
     end
     
+    def teardown!
+      return unless database? && insert?
+      ActiveRecord::Base.transaction do
+        ordered_models.each(&:purge)
+      end
+    end
+    
     def setup_test_run
       ModelStubbing.records.clear
       ModelStubbing.stub_current_time_with(current_time) if current_time

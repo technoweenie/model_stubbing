@@ -94,13 +94,13 @@ module ModelStubbing
     end
     
     def insert
-      Fixtures.cache_for_connection(connection).delete(@model_class.table_name) if defined?(Fixtures)
       purge
       @stubs.values.each &:insert
     end
     
     def purge
-      connection.delete "DELETE FROM #{connection.quote_table_name(model_class.table_name)}", 'Fixture Delete'
+      #Fixtures.cache_for_connection(connection).delete(@model_class.table_name) if defined?(Fixtures)
+      connection.delete "DELETE FROM #{connection.quote_table_name(@model_class.table_name)}", 'Fixture Delete'
     end
     
     def connection

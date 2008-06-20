@@ -6,8 +6,17 @@ module ModelStubbing
         attr_accessor :definition, :definition_inserted
       end
       base.extend ClassMethods
+      
+      if base.respond_to?(:prepend_after)
+        base.prepend_after(:all) do
+          if self.class.definition_inserted
+            self.class.definition.teardown!
+            self.class.definition_inserted = false
+          end
+        end
+      end
     end
-    
+
     module ClassMethods
       def create_model_methods_for(models)
         class_eval models.collect { |model| model.stub_method_definition }.join("\n")
@@ -30,7 +39,7 @@ module ModelStubbing
     def stubs(key)
       self.class.definition && self.class.definition.stubs[key]
     end
-    
+
     def current_time
       self.class.definition && self.class.definition.current_time
     end
