@@ -24,6 +24,7 @@ module ModelStubbing
     end
 
     def setup_fixtures
+      ModelStubbing.records.clear
       return unless self.class.definition
       unless self.class.definition_inserted
         self.class.definition.insert!
