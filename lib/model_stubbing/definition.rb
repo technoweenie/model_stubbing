@@ -112,6 +112,8 @@ module ModelStubbing
     end
     
     def teardown_test_run
+      ModelStubbing.records.clear
+      # TODO: teardown Time.stubs(:now)
       return unless database?
       ActiveRecord::Base.connection.rollback_db_transaction
       ActiveRecord::Base.verify_active_connections!
