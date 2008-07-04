@@ -3,11 +3,8 @@ module ModelStubbing
   # can set the current time for your tests.  You typically create one per test case or
   # rspec example.
   class Definition
-    attr_writer :insert
-    attr_writer :current_time
-    attr_reader :models
-    attr_reader :stubs
-    attr_reader :ordered_models
+    attr_writer :insert, :current_time
+    attr_reader :models, :stubs, :ordered_models, :options
 
     # Sets the time that Time.now is mocked to (in UTC)
     def time(*args)
@@ -66,8 +63,10 @@ module ModelStubbing
     # Shortcut methods for each model are generated as well.  users(:default) accesses
     # the default user stub, and users(:admin) accesses the 'admin' user stub.
     def setup_on(base, options = {}, &block)
+      options = {:validate => true, :insert => true}.update(options)
       self.insert = false if options[:insert] == false
       self.instance_eval(&block) if block
+      @options = options
       if base.ancestors.any? { |a| a.to_s == "Test::Unit::TestCase" || a.to_s == "Spec::Example::ExampleGroup" }
         unless base.ancestors.include?(ModelStubbing::Extension)
           base.send :include, ModelStubbing::Extension

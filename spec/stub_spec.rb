@@ -153,10 +153,65 @@ module ModelStubbing
     end
   end
 
+  describe Stub, "inserting a new record" do
+    before :all do
+      @defn  = ModelStubbing.definitions[:default]
+      @model = @defn.models[:model_stubbing_users]
+      @stub  = @model.default
+      @opts  = @defn.options.dup
+    end
+  
+    before do
+      ModelStubbing.records.clear
+      ModelStubbing.record_ids.clear
+      @defn.options.update(@opts)
+      @conn   = mock("Connection")
+      @record = @stub.record
+      @stub.stub!(:record).and_return(@record)
+      @stub.stub!(:connection).and_return(@conn)
+      @inserting_record = lambda { @stub.insert }
+    end
+
+    it "inserts an invalid record without validating" do
+      @defn.options.update(:validate => false, :callbacks => false)
+      @record.valid = false
+      @conn.should_receive(:insert_fixture)
+      @inserting_record.call
+    end
+
+    it "raises error an invalid record with validation" do
+      @defn.options.update(:validate => true, :callbacks => false)
+      @record.valid = false
+      @conn.should_not_receive(:insert_fixture)
+      @inserting_record.should raise_error
+    end
+
+    it "inserts valid record with validation" do
+      @defn.options.update(:validate => true, :callbacks => false)
+      @record.valid = true
+      @conn.should_receive(:insert_fixture)
+      @inserting_record.call
+    end
+
+    it "raises error an invalid record with validation and callbacks" do
+      @defn.options.update(:validate => true, :callbacks => true)
+      @record.valid = false
+      @conn.should_not_receive(:insert_fixture)
+      @inserting_record.should raise_error
+    end
+
+    it "inserts valid record with validation and callbacks" do
+      @defn.options.update(:validate => true, :callbacks => true)
+      @record.valid = true
+      @conn.should_not_receive(:insert_fixture)
+      @inserting_record.call
+    end
+  end
+
   describe Stub, "instantiating a new record" do
     before :all do
-      @model   = ModelStubbing.definitions[:default].models[:model_stubbing_users]
-      @stub = @model.default
+      @model = ModelStubbing.definitions[:default].models[:model_stubbing_users]
+      @stub  = @model.default
     end
   
     before do

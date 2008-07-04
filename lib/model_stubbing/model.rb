@@ -1,12 +1,8 @@
 module ModelStubbing
   # Models hold one or more stubs.
   class Model
-    attr_reader   :definition
-    attr_accessor :name
-    attr_accessor :plural
-    attr_accessor :singular
-    attr_reader   :stubs
-    attr_reader   :model_class
+    attr_accessor :name, :plural, :singular
+    attr_reader   :definition, :stubs, :model_class
 
     # Creates a stub for this model.  A stub with no name is assumed to be the default
     # stub.  A global key for the definition is also created based on the singular
@@ -85,8 +81,8 @@ module ModelStubbing
     
     def stub_method_definition
       "def #{@plural}(key, attrs = {}) self.class.definition.models[#{@plural.inspect}].retrieve_record(key, attrs) end\n
-      def new_#{@singular}(key = :default, attrs = {}) key, attrs = :default, key if key.is_a?(Hash) ; #{@plural}(key, attrs.merge(:id => :new)) end\n
-      def new_#{@singular}!(key = :default, attrs = {}) stub = new_#{@singular}(key, attrs) ; stub.save! ; stub end"
+      def new_#{@singular}(key = :default, attrs = {})  key, attrs = :default, key if key.is_a?(Hash) ; #{@plural}(key, attrs.merge(:id => :new)) end\n
+      def new_#{@singular}!(key = :default, attrs = {}) key, attrs = :default, key if key.is_a?(Hash) ; #{@plural}(key, attrs.merge(:id => :dup)) end"
     end
 
     def inspect

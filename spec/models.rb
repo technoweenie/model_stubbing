@@ -27,7 +27,7 @@ module ModelStubbing
   end
   
   class BlankModel
-    attr_accessor :id
+    attr_accessor :id, :valid
     attr_reader :attributes
   
     def self.base_class
@@ -35,7 +35,11 @@ module ModelStubbing
     end
   
     def new_record?() @new_record end
-  
+
+    def valid?
+      !!@valid
+    end
+
     def initialize(attributes = {})
       @attributes = attributes
       attributes.each do |key, value|
@@ -59,7 +63,11 @@ module ModelStubbing
       @new_record = false
       self.id = db_id if self.id.nil?
     end
-    alias :save! :save
+
+    def save!
+      raise "Invalid!" unless valid?
+      save
+    end
     
     def method_missing(name, *args)
       if name.to_s =~ /(\w+)=$/
@@ -68,7 +76,18 @@ module ModelStubbing
         super
       end
     end
-  
+
+    def errors
+      @errors ||= {}.instance_eval do
+        def full_messages
+          inject([]) do |msg, (key, value)|
+            msg << "#{key} #{value}"
+          end
+        end
+        self
+      end
+    end
+
   private
     def meta_class
       @meta_class ||= class << self; self end
@@ -91,6 +110,10 @@ module ModelStubbing
   Tag  = Class.new BlankModel
   module Foo
     Bar = Class.new BlankModel
+  end
+
+  def User.table_name
+    "users"
   end
 
   define_models do
