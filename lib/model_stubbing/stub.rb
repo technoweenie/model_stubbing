@@ -167,7 +167,8 @@ module ModelStubbing
         column_name = column_name_for key
         column      = column_for column_name
         value       = value.record.id if value.is_a?(Stub)
-        fixtures << @stub.connection.quote(value, column).gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
+        quoted      = @stub.connection ? @stub.connection.quote(value, column) : %("#{value.to_s}")
+        fixtures << quoted.gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
       end.join(", ")
     end
 
