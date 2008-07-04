@@ -116,18 +116,20 @@ module ModelStubbing
       record.new_record = true if @inserting
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
+        meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
         if value.is_a? Stub
           # set foreign key
           record.send("#{stubbed_attributes.column_name_for(key)}=", value.record.id)
           # set association
-          meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
-          record.send("#{key}=", value.is_a?(Stub) ? value.record : value)
+          record.send("#{key}=", value.record)
         elsif value.is_a? Array
+          records = value.map { |v| v.is_a?(Stub) ? v.record : v }
+          records.compact!
+
           # when assigning has_many instantiated stubs, temporarily act as new
           # otherwise AR inserts rows
-          value.collect! { |v| v.is_a?(Stub) ? v.record : v }
           nr, record.new_record = record.new_record?, true
-          record.send("#{key}=", value.compact)
+          record.send("#{key}=", records)
           record.new_record = nr
         else
           record.send("#{key}=", value)
