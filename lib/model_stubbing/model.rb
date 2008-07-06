@@ -22,7 +22,7 @@ module ModelStubbing
       @name        = options.delete(:name)     || default_name.to_sym
       @plural      = options.delete(:plural)   || name
       @singular    = options.delete(:singular) || name.to_s.singularize
-      @options     = {}
+      @options     = options
       @stubs       = {}
       unless @model_class.respond_to?(:mock_id)
         class << @model_class
@@ -97,7 +97,7 @@ module ModelStubbing
     
     def purge
       if connection
-        connection.delete "DELETE FROM #{connection.quote_table_name(@model_class.table_name)}", 'Model Stubs Delete'
+        connection.delete "DELETE FROM #{connection.quote_table_name(@model_class.table_name)}"
       end
     end
     

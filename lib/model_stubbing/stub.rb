@@ -49,8 +49,8 @@ module ModelStubbing
     def insert(attributes = {})
       @inserting = true
       object = record(attributes)
+      object.new_record = true
       if model.options[:callbacks]
-        object.new_record = true # record could have returned one from the cache
         object.save!
       elsif !model.options[:validate] || object.valid?
         connection.insert_fixture(object.stubbed_attributes, model.model_class.table_name)
@@ -119,7 +119,6 @@ module ModelStubbing
         record.new_record = false
         record.id = ModelStubbing.record_ids[this_record_key] ||= attributes[:id] || @model.model_class.base_class.mock_id
       end
-      record.new_record = true if @inserting
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
         meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
