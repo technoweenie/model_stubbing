@@ -137,7 +137,11 @@ module ModelStubbing
           record.send("#{key}=", records)
           record.new_record = nr
         else
-          record.send("#{key}=", value)
+          duped_value = case value
+            when TrueClass, FalseClass, Fixnum, Float, NilClass, Symbol then value
+            else value.dup
+          end
+          record.send("#{key}=", duped_value)
         end
       end
       record
