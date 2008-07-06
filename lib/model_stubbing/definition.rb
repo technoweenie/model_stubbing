@@ -37,6 +37,7 @@ module ModelStubbing
       @ordered_models = []
       @models         = {}
       @stubs          = {}
+      @options        = {}
       instance_eval &block if block
     end
     
