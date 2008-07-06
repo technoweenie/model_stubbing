@@ -23,11 +23,11 @@ module ModelStubbing
   # configure this with the :validate or :callbacks options.
   #
   # Options:
-  # * :copy - set to false if you don't want this definition to be a dup of
-  #   the :default definition
-  # * :insert - set to false if you don't want to insert this definition
-  #   into the database.
-  # * :validate - set to false if you don't want to validate model data, or run callbacks
+  # * :copy      - set to false if you don't want this definition to be a dup of
+  #                the :default definition
+  # * :insert    - set to false if you don't want to insert this definition
+  #                into the database.
+  # * :validate  - set to false if you don't want to validate model data, or run callbacks
   # * :callbacks - set to true if you want to run callbacks.
   def define_models(name = nil, options = {}, &block)
     if name.is_a? Hash

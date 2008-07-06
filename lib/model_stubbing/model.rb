@@ -2,7 +2,7 @@ module ModelStubbing
   # Models hold one or more stubs.
   class Model
     attr_accessor :name, :plural, :singular
-    attr_reader   :definition, :stubs, :model_class
+    attr_reader   :definition, :stubs, :model_class, :options
 
     # Creates a stub for this model.  A stub with no name is assumed to be the default
     # stub.  A global key for the definition is also created based on the singular
@@ -19,9 +19,10 @@ module ModelStubbing
     def initialize(definition, klass, options = {}, &block)
       @definition  = definition
       @model_class = klass
-      @name        = options[:name]     || default_name.to_sym
-      @plural      = options[:plural]   || name
-      @singular    = options[:singular] || name.to_s.singularize
+      @name        = options.delete(:name)     || default_name.to_sym
+      @plural      = options.delete(:plural)   || name
+      @singular    = options.delete(:singular) || name.to_s.singularize
+      @options     = {}
       @stubs       = {}
       unless @model_class.respond_to?(:mock_id)
         class << @model_class
@@ -44,7 +45,7 @@ module ModelStubbing
     end
     
     def dup(definition = nil)
-      copy = self.class.new(definition || @definition, @model_class, :name => @name, :plural => @plural, :singular => @singular)
+      copy = self.class.new(definition || @definition, @model_class, @options.merge(:name => @name, :plural => @plural, :singular => @singular))
       stubs.each do |key, value|
         copy.stubs[key] = value.dup(copy)
       end

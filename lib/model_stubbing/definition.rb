@@ -17,8 +17,16 @@ module ModelStubbing
     
     # Creates a new ModelStubbing::Model to hold one or more stubs.  Multiple calls will append
     # any added stubs to the same model instance.
+    #
+    # Options:
+    # * :name      - The name used of the model.  Defaults to the "Foo".underscore.pluralize
+    # * :plural    - The name of the method used to access the stubs in your test.  
+    #                Defaults to #name.
+    # * :singular  - The name of the method for the new_* stub accessors.
+    # * :validate  - set to false if you don't want to validate model data, or run callbacks
+    # * :callbacks - set to true if you want to run callbacks.
     def model(klass, options = {}, &block)
-      m = Model.new(self, klass, options)
+      m = Model.new(self, klass, @options.merge(options))
       @ordered_models <<  m unless @models.key?(m.name)
       @models[m.name] ||= m
       @models[m.name].instance_eval(&block) if block
@@ -35,6 +43,7 @@ module ModelStubbing
     def dup
       copy = self.class.new
       copy.current_time = @current_time
+      copy.options.update @options
       models.each do |name, model|
         copy.models[name] = model.dup(copy)
       end

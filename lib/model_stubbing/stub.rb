@@ -4,7 +4,7 @@ module ModelStubbing
   # will return the exact same instance.  However, custom attributes
   # will create unique stub instances.
   class Stub
-    attr_reader   :model, :attributes, :global_key, :name
+    attr_reader :model, :attributes, :global_key, :name
     
     # Creates a new stub.  If it's not the default, it inherits the default 
     # stub's attributes.
@@ -49,13 +49,13 @@ module ModelStubbing
     def insert(attributes = {})
       @inserting = true
       object = record(attributes)
-      if model.definition.options[:callbacks]
+      if model.options[:callbacks]
         object.new_record = true # record could have returned one from the cache
         object.save!
-      elsif !model.definition.options[:validate] || object.valid?
+      elsif !model.options[:validate] || object.valid?
         connection.insert_fixture(object.stubbed_attributes, model.model_class.table_name)
       else
-        raise "Model data is not valid: #{object.errors.full_messages.to_sentence}"
+        raise "#{model.model_class}##{@name} data is not valid: #{object.errors.full_messages.to_sentence}"
       end
       @inserting = false
     end
