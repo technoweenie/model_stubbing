@@ -4,7 +4,6 @@ require 'model_stubbing/model'
 require 'model_stubbing/stub'
 
 module ModelStubbing
-  extend self
   # Gets a hash of all current definitions.
   def self.definitions() @definitions ||= {} end
   # stores {stub => record_id} so that identical stubs keep the same ID
@@ -29,7 +28,7 @@ module ModelStubbing
   #                into the database.
   # * :validate  - set to false if you don't want to validate model data, or run callbacks
   # * :callbacks - set to true if you want to run callbacks.
-  def define_models(name = nil, options = {}, &block)
+  def self.define_models(name = nil, options = {}, &block)
     if name.is_a? Hash
       options = name
       name    = nil
@@ -39,7 +38,29 @@ module ModelStubbing
     base      = name == base_name ? nil : ModelStubbing.definitions[base_name]
     defn      = ModelStubbing.definitions[name] ||= (base && options[:copy] != false) ? base.dup : ModelStubbing::Definition.new
     options   = base.options.merge(options) if base
-    defn.setup_on self, options, &block
+    defn.setup_on options[:target] || self, options, &block
+  end
+
+  # Included into the base TestCase and Spec Example classes
+  module Methods
+    # By default, any model stubbing definitions specified inside of a spec or test with a block is a COPY of a named definition.
+    # Therefore, reopening a model stubbing definition inside of a spec will not update the definition for other specs.  Whew!
+    def define_models(base_name = :default, options = {}, &block)
+      case base_name
+        # if options are given first, assume that base_name is default
+        when Hash
+          options   = base_name
+          base_name = nil
+        when nil
+        else
+          unless options[:copy] || block.nil?
+            options[:copy] = base_name
+            base_name = self
+          end
+      end
+
+      ModelStubbing.define_models(base_name, options.update(:target => self), &block)
+    end
   end
 
 protected
@@ -66,5 +87,5 @@ protected
   end
 end
 
-Test::Unit::TestCase.extend ModelStubbing
-Spec::Example::ExampleGroup.extend ModelStubbing if defined? Spec::Example::ExampleGroup
+Test::Unit::TestCase.extend ModelStubbing::Methods
+Spec::Example::ExampleGroup.extend ModelStubbing::Methods if defined? Spec::Example::ExampleGroup
