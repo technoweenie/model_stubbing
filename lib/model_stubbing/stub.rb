@@ -39,7 +39,11 @@ module ModelStubbing
     # pass :id => :new to specify you want a new record, not one in the database
     def record(attributes = {})
       this_record_key = record_key(attributes)
-      ModelStubbing.records[this_record_key] ||= instantiate(this_record_key, attributes)
+      if attributes[:id] != :new && ModelStubbing.records.key?(this_record_key)
+        ModelStubbing.records[this_record_key]
+      else
+        ModelStubbing.records[this_record_key] = instantiate(this_record_key, attributes)
+      end
     end
     
     def inspect
@@ -157,7 +161,6 @@ module ModelStubbing
     def record_key(attributes)
       return @record_key if @record_key && attributes.empty?
       key = [model.model_class.name, @global_key, @attributes.merge(attributes).inspect] * ":"
-      key << model.model_class.base_class.mock_id.to_s if attributes[:id] == :new
       @record_key = key if attributes.empty?
       key 
     end
