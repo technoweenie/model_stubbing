@@ -50,7 +50,7 @@ module ModelStubbing
         # if options are given first, assume that base_name is default
         when Hash
           options   = base_name
-          base_name = nil
+          base_name = self
         when nil
         else
           unless options[:copy] || block.nil?
