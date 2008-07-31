@@ -104,5 +104,19 @@ module ModelStubbing
     def connection
       @connection ||= model_class.respond_to?(:connection) && model_class.connection
     end
+
+  protected
+    def method_missing(model_name, stub_name, *args)
+      named_model = @definition.models[model_name]
+      if named_model.nil?
+        raise "No #{model_name.inspect} model found when calling #{model_name}(#{stub_name})"
+      end
+      stub = named_model.stubs[stub_name]
+      if stub.nil?
+        raise "No #{stub_name.inspect} stub found in the #{model_name.inspect} model when calling #{model_name}(#{stub_name})"
+      else
+        stub
+      end
+    end
   end
 end
