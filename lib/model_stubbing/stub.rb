@@ -19,6 +19,8 @@ module ModelStubbing
         end
 
       @global_key = (name == :default ? @model.singular : "#{name}_#{@model.singular}").to_sym
+      @model.ordered_stubs << name
+      @model.ordered_stubs.uniq!
       @model.all_stubs[@global_key] = @model.stubs[name] = self
     end
     

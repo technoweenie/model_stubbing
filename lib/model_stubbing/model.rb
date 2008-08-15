@@ -2,7 +2,7 @@ module ModelStubbing
   # Models hold one or more stubs.
   class Model
     attr_accessor :name, :plural, :singular
-    attr_reader   :definition, :stubs, :model_class, :options
+    attr_reader   :definition, :stubs, :model_class, :options, :ordered_stubs
 
     # Creates a stub for this model.  A stub with no name is assumed to be the default
     # stub.  A global key for the definition is also created based on the singular
@@ -17,13 +17,14 @@ module ModelStubbing
     end
 
     def initialize(definition, klass, options = {}, &block)
-      @definition  = definition
-      @model_class = klass
-      @name        = options.delete(:name)     || default_name.to_sym
-      @plural      = options.delete(:plural)   || name
-      @singular    = options.delete(:singular) || name.to_s.singularize
-      @options     = options
-      @stubs       = {}
+      @definition    = definition
+      @model_class   = klass
+      @name          = options.delete(:name)     || default_name.to_sym
+      @plural        = options.delete(:plural)   || name
+      @singular      = options.delete(:singular) || name.to_s.singularize
+      @options       = options
+      @stubs         = {}
+      @ordered_stubs = []
       unless @model_class.respond_to?(:mock_id)
         class << @model_class
           define_method :mock_id do
@@ -92,7 +93,11 @@ module ModelStubbing
     
     def insert
       purge
-      @stubs.values.each &:insert
+      @ordered_stubs.each do |name| 
+        if stub = @stubs[name]
+          stub.insert
+        end
+      end
     end
     
     def purge
