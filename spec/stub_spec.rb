@@ -9,7 +9,6 @@ module ModelStubbing
       @posts      = @definition.models[:model_stubbing_posts]
       @user       = @users.default
       @post       = @posts.default
-      @editor_id  = StubProxy.new(@definition, @users.name, :admin, :id)
     end
 
     it "is defined in stub file" do
@@ -18,11 +17,11 @@ module ModelStubbing
   
     it "has the default stub's attributes" do
       @user.attributes.should == {:name => 'bob', :admin => false}
-      @post.attributes.should == {:title => 'initial', :user => @users.stubs[:admin], :editor_id => @editor_id, :published_at => @definition.current_time + 5.days}
+      @post.attributes.should == {:title => 'initial', :user => @users.stubs[:admin], :published_at => @definition.current_time + 5.days}
     end
   
     it "#with returns merged attributes" do
-      @post.with(:title => 'fred').should == {:title => 'fred', :user => @users.stubs[:admin].record, :editor_id => @editor_id.record, :published_at => @definition.current_time + 5.days}
+      @post.with(:title => 'fred').should == {:title => 'fred', :user => @users.stubs[:admin].record, :published_at => @definition.current_time + 5.days}
     end
   
     it "#only returns only given keys" do
@@ -30,11 +29,11 @@ module ModelStubbing
     end
   
     it "#except returns other keys" do
-      @post.except(:published_at).should == {:title => 'initial', :user => @users.stubs[:admin].record, :editor_id => @editor_id.record}
+      @post.except(:published_at).should == {:title => 'initial', :user => @users.stubs[:admin].record}
     end
   
     it "merges named stub attributes with default attributes" do
-      @users.stubs[:admin].attributes.should == {:name => 'bob', :admin => true, :edited_post => StubProxy.new(@definition, @posts.name, :default)}
+      @users.stubs[:admin].attributes.should == {:name => 'bob', :admin => true}
     end
   
     it "sets default model stubs in the definition's global stubs" do

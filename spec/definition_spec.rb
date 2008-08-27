@@ -81,11 +81,11 @@ module ModelStubbing
   
     it "dups each model" do
       @defn.models.each do |name, model|
-        duped_model   = @copy.models[name]
+        duped_model = @copy.models[name]
         model.should == duped_model
         model.should_not be_equal(duped_model)
         model.stubs.each do |key, stub|
-          duped_stub   = @copy.models[name].stubs[key]
+          duped_stub = @copy.models[name].stubs[key]
           stub.should == duped_stub
           stub.should_not be_equal(duped_stub)
         end
@@ -94,7 +94,7 @@ module ModelStubbing
   
     it "dups each stub" do
       @defn.stubs.each do |name, stub|
-        duped_stub   = @copy.stubs[name]
+        duped_stub = @copy.stubs[name]
         stub.should == duped_stub
         stub.should_not be_equal(duped_stub)
       end

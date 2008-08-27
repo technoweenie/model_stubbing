@@ -2,7 +2,6 @@ require 'model_stubbing/extensions'
 require 'model_stubbing/definition'
 require 'model_stubbing/model'
 require 'model_stubbing/stub'
-require 'model_stubbing/stub_proxy'
 
 module ModelStubbing
   # Gets a hash of all current definitions.

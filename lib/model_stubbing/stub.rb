@@ -47,13 +47,7 @@ module ModelStubbing
         ModelStubbing.records[this_record_key] = instantiate(this_record_key, attributes)
       end
     end
-
-    # Same as #record, but does not instantiate stubs.
-    def record_without_stubs
-      this_record_key = record_key(attributes)
-      instantiate(this_record_key, attributes, false)
-    end
-
+    
     def inspect
       "(ModelStubbing::Stub(#{@name.inspect} => #{attributes.inspect}))"
     end
@@ -75,7 +69,7 @@ module ModelStubbing
     def with(attributes)
       @attributes.inject({}) do |attr, (key, value)|
         attr_value = attributes[key] || value
-        attr_value = attr_value.record if (attr_value.is_a?(Stub) || attr_value.is_a?(StubProxy))
+        attr_value = attr_value.record if attr_value.is_a?(Stub)
         attr.update key => attr_value
       end
     end
@@ -84,7 +78,7 @@ module ModelStubbing
       keys = Set.new Array(keys)
       @attributes.inject({}) do |attr, (key, value)|
         if keys.include?(key)
-          attr.update key => ((value.is_a?(Stub) || value.is_a?(StubProxy)) ? value.record : value)
+          attr.update key => (value.is_a?(Stub) ? value.record : value)
         else
           attr
         end
@@ -97,7 +91,7 @@ module ModelStubbing
         if keys.include?(key)
           attr
         else
-          attr.update key => ((value.is_a?(Stub) || value.is_a?(StubProxy)) ? value.record : value)
+          attr.update key => (value.is_a?(Stub) ? value.record : value)
         end
       end
     end
@@ -105,14 +99,9 @@ module ModelStubbing
     def connection
       @connection ||= @model.connection
     end
-
-    # duck typing with StubProxy
-    def method_name
-      nil
-    end
-
+  
   private
-    def instantiate(this_record_key, attributes, with_stubs = true)
+    def instantiate(this_record_key, attributes)
       case attributes[:id] 
         when :new
           is_new_record = true
@@ -139,35 +128,26 @@ module ModelStubbing
       record.stubbed_attributes = stubbed_attributes.merge(:id => record.id)
       stubbed_attributes.each do |key, value|
         meta.send :attr_accessor, key unless record.respond_to?("#{key}=")
-        case value
-          when StubProxy, Stub
-            if with_stubs
-              if value.method_name
-                record.send("#{key}=", value.record_without_stubs)
-              else
-                # set foreign key
-                record.send("#{stubbed_attributes.column_name_for(key)}=", value.record_without_stubs.id)
-                # set association
-                record.send("#{key}=", value.record)
-              end
-            end
-          when Array
-            if with_stubs
-              records = value.map { |v| (v.is_a?(Stub) || v.is_a?(StubProxy)) ? v.record : v }
-              records.compact!
-              
-              # when assigning has_many instantiated stubs, temporarily act as new
-              # otherwise AR inserts rows
-              nr, record.new_record = record.new_record?, true
-              record.send("#{key}=", records)
-              record.new_record = nr
-            end
-          else
-            duped_value = case value
-              when TrueClass, FalseClass, Fixnum, Float, NilClass, Symbol then value
-              else value.dup
-            end
-            record.send("#{key}=", duped_value)
+        if value.is_a? Stub
+          # set foreign key
+          record.send("#{stubbed_attributes.column_name_for(key)}=", value.record.id)
+          # set association
+          record.send("#{key}=", value.record)
+        elsif value.is_a? Array
+          records = value.map { |v| v.is_a?(Stub) ? v.record : v }
+          records.compact!
+
+          # when assigning has_many instantiated stubs, temporarily act as new
+          # otherwise AR inserts rows
+          nr, record.new_record = record.new_record?, true
+          record.send("#{key}=", records)
+          record.new_record = nr
+        else
+          duped_value = case value
+            when TrueClass, FalseClass, Fixnum, Float, NilClass, Symbol then value
+            else value.dup
+          end
+          record.send("#{key}=", duped_value)
         end
       end
       record
@@ -202,11 +182,7 @@ module ModelStubbing
       list = inject([]) do |fixtures, (key, value)|
         column_name = column_name_for key
         column      = column_for column_name
-        case value
-          when Stub then value = value.record_without_stubs.id
-          when StubProxy
-            value = value.method_name ? value.record : value.record_without_stubs.id
-        end
+        value       = value.record.id if value.is_a?(Stub)
         quoted      = @stub.connection ? @stub.connection.quote(value, column) : %("#{value.to_s}")
         fixtures << quoted.gsub('[^\]\\n', "\n").gsub('[^\]\\r', "\r")
       end.join(", ")
@@ -215,12 +191,12 @@ module ModelStubbing
     def column_name_for(key)
       (@keys ||= {})[key] ||= begin
         value = self[key]
-        if value.is_a?(Stub) || value.is_a?(StubProxy)
+        if value.is_a? Stub
           if defined?(ActiveRecord)
             if reflection = model_class.reflect_on_association(key)
               reflection.primary_key_name
             else
-              "#{key}_id".sub(/_id_id/, '_id')
+              raise "No reflection '#{key}' found for #{model_class.name} while guessing column_name"
             end
           else
             "#{key}_id"

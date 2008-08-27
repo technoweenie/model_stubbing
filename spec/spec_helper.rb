@@ -12,11 +12,4 @@ rescue LoadError
   require 'spec'
 end
 
-begin
-  require 'ruby-debug'
-  Debugger.start
-rescue LoadError
-  # no debugger
-end
-
 require File.join(File.dirname(__FILE__), 'models')
