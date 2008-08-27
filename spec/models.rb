@@ -135,13 +135,13 @@ module ModelStubbing
     end
     
     model User do
-      stub :admin, :admin => true # inherits from default fixture
+      stub :admin, :admin => true, :edited_post => model_stubbing_posts(:default) # inherits from default fixture
     end
     
     model Post do
       # uses admin user fixture above
-      stub :title => 'initial', :user => all_stubs(:admin_model_stubbing_user), :published_at => current_time + 5.days
-      stub :nice_one, :title => 'nice one', :tags => [all_stubs(:foo_model_stubbing_tag), all_stubs(:bar_model_stubbing_tag)]
+      stub :title => 'initial', :user => model_stubbing_users(:admin), :published_at => current_time + 5.days, :editor_id => model_stubbing_users(:admin).id
+      stub :nice_one, :title => 'nice one', :tags => [model_stubbing_tags(:foo), model_stubbing_tags(:bar)]
     end
   end
   
