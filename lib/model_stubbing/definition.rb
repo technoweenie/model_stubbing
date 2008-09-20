@@ -115,7 +115,7 @@ module ModelStubbing
       ModelStubbing.records.clear
       ModelStubbing.stub_current_time_with(current_time) if current_time
       return unless database?
-      ActiveRecord::Base.send :increment_open_transactions
+      ActiveRecord::Base.connection.increment_open_transactions
       ActiveRecord::Base.connection.begin_db_transaction
     end
     
