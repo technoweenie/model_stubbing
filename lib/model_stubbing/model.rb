@@ -85,14 +85,22 @@ module ModelStubbing
       <<-END
       def #{@plural}(key, attrs = {})
         klass = self.class
-        until klass == Object
-          if defined?(klass.definition) and klass.definition
-            return klass.definition.models[#{@plural.inspect}].retrieve_record(key, attrs)
-          else
-            klass = klass.parent
+        unless defined?(klass.definition) and klass.definition
+          # If we are in a subclass where define_models was called on a superclass but
+          # not on this subclass (e.g. in a nested define block) then define_models
+          # needs to be called again for this subclass in order for the teardown to
+          # happen correctly.
+          k = klass.superclass
+          name = nil
+          until k == Object or k.nil?
+            if defined?(k.definition) and k.definition
+              name = k.definition.name
+              k = nil
+            end
           end
+          klass.module_eval { define_models name }
         end
-        raise 'Could not find models in #{ self.class.name }'
+        klass.definition.models[#{@plural.inspect}].retrieve_record(key, attrs)
       end
       def new_#{@singular}(key = :default, attrs = {})
         key, attrs = :default, key if key.is_a?(Hash)
