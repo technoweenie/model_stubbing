@@ -35,7 +35,7 @@ module ModelStubbing
       end
       instance_eval &block if block
     end
-    
+
     def default_name
       name = @model_class.name
       if name.respond_to?(:underscore)
@@ -82,10 +82,32 @@ module ModelStubbing
     end
     
     def stub_method_definition
-      "def #{@plural}(key, attrs = {}) self.class.definition.models[#{@plural.inspect}].retrieve_record(key, attrs) end\n
-      def new_#{@singular}(key = :default, attrs = {})  key, attrs = :default, key if key.is_a?(Hash) ; #{@plural}(key, attrs.merge(:id => :new)) end\n
-      def new_#{@singular}!(key = :default, attrs = {}) key, attrs = :default, key if key.is_a?(Hash) ; #{@plural}(key, attrs.merge(:id => :dup)) end\n
-      def create_#{@singular}(key = :default, attrs = {}) stub = new_#{@singular}(key, attrs) ; stub.save! ; stub end"
+      <<-END
+      def #{@plural}(key, attrs = {})
+        klass = self.class
+        until klass == Object
+          if defined?(klass.definition) and klass.definition
+            return klass.definition.models[#{@plural.inspect}].retrieve_record(key, attrs)
+          else
+            klass = klass.parent
+          end
+        end
+        raise 'Could not find models in #{ self.class.name }'
+      end
+      def new_#{@singular}(key = :default, attrs = {})
+        key, attrs = :default, key if key.is_a?(Hash)
+        #{@plural}(key, attrs.merge(:id => :new))
+      end
+      def new_#{@singular}!(key = :default, attrs = {})
+        key, attrs = :default, key if key.is_a?(Hash)
+        #{@plural}(key, attrs.merge(:id => :dup))
+      end
+      def create_#{@singular}(key = :default, attrs = {})
+        stub = new_#{@singular}(key, attrs)
+        stub.save!
+        stub
+      end
+      END
     end
 
     def inspect
