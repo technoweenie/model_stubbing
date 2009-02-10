@@ -99,6 +99,13 @@ module ModelStubbing
             end
           end
           klass.module_eval { define_models name }
+          unless klass.definition_inserted
+            klass.definition.insert!
+            # Don't want to set definition_inserted to true because it will
+            # roll back at the end of the first test. The next test will
+            # correctly insert again before the transaction begins.
+          end
+          klass.definition.setup_test_run
         end
         klass.definition.models[#{@plural.inspect}].retrieve_record(key, attrs)
       end
