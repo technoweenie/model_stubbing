@@ -48,6 +48,7 @@ module ModelStubbing
       end
       if database?
         ActiveRecord::Base.connection.rollback_db_transaction
+        ActiveRecord::Base.connection.decrement_open_transactions
         ActiveRecord::Base.verify_active_connections!
       end
     end
